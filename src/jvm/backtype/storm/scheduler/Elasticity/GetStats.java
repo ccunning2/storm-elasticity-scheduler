@@ -220,7 +220,10 @@ public class GetStats {
 					//get specific stats
 					ExecutorSpecificStats execSpecStats = executorStats.get_specific();
 					//get number of time executed
-					BoltStats boltStats = execSpecStats.get_bolt();
+					BoltStats boltStats = null;
+					if(execSpecStats.is_set_bolt() == true){
+						boltStats = execSpecStats.get_bolt();
+					}
 							
 					// get transfer info
 					Map<String, Map<String, Long>> transfer = executorStats
@@ -232,8 +235,7 @@ public class GetStats {
 					
 					// LOG.info("Transfer: {}", transfer);
 					if (transfer.get(":all-time").get("default") != null
-							&& emit.get(":all-time").get("default") != null
-							&& boltStats.get_executed().get(":all-time").size() > 0) {
+							&& emit.get(":all-time").get("default") != null) {
 						// getting task hash
 						String hash_id = this.getTaskHashId(host, port,
 								componentId, topo, taskId);
@@ -242,15 +244,23 @@ public class GetStats {
 								.get("default").intValue();
 						Integer totalEmitOutput = emit.get(":all-time")
 								.get("default").intValue();
-						Integer totalExecuted = getBoltStatLongValueFromMap(boltStats.get_executed(), ":all-time").intValue();
-						//if it's a bolt, getting executed
-						if(execSpecStats.is_set_bolt()){
-							//Integer executed_count=boltStats.get_executed();
-							if(this.executeStatsTable.containsKey(hash_id)==false){
-								
-								this.executeStatsTable.put(hash_id, totalExecuted);
+						Integer totalExecuted = 0;
+						if (boltStats != null) {
+							totalExecuted = getBoltStatLongValueFromMap(
+									boltStats.get_executed(), ":all-time")
+									.intValue();
+							// if it's a bolt, getting executed
+							if (execSpecStats.is_set_bolt() == true) {
+								// Integer
+								// executed_count=boltStats.get_executed();
+								if (this.executeStatsTable.containsKey(hash_id) == false) {
+
+									this.executeStatsTable.put(hash_id,
+											totalExecuted);
+								}
+								 LOG.info("Executor {}: GLOBAL STREAM ID: {}",taskId,
+								 boltStats.get_executed());
 							}
-							//LOG.info("Executor {}: GLOBAL STREAM ID: {}",taskId, boltStats.get_executed());
 						}
 						
 						if (this.transferStatsTable.containsKey(hash_id) == false) {
@@ -266,7 +276,10 @@ public class GetStats {
 								- this.transferStatsTable.get(hash_id);
 						Integer emit_throughput = totalEmitOutput
 								- this.emitStatsTable.get(hash_id);
-						Integer execute_throughput = totalExecuted-this.executeStatsTable.get(hash_id);
+						Integer execute_throughput = 0;
+						if(this.executeStatsTable.containsKey(hash_id) == true) {
+							 execute_throughput = totalExecuted-this.executeStatsTable.get(hash_id);
+						}
 
 						LOG.info((host + ':' + port + ':' + componentId + ":"
 								+ topo.get_id() + ":" + taskId + ","
@@ -274,7 +287,7 @@ public class GetStats {
 								+ "," + this.transferStatsTable.get(hash_id)
 								+ "," + transfer_throughput + ","
 								+ emit.get(":all-time").get("default") + ","
-								+ this.emitStatsTable.get(hash_id) + "," + emit_throughput
+								+ this.emitStatsTable.get(hash_id) + "," + emit_throughput +","
 								+ totalExecuted + ","
 								+ this.executeStatsTable.get(hash_id) + "," + execute_throughput));
 						// LOG.info("-->transfered: {}\n -->emmitted: {}",
@@ -489,6 +502,19 @@ public class GetStats {
 		return retVal;
 	}
 	
+	public String printEmitThroughputHistory(){
+		String retVal="";
+		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this.emitThroughputHistory.entrySet()) {
+			retVal+="Topology: "+i.getKey()+"\n";
+			for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
+				retVal+="Component: "+k.getKey()+"\n";
+				retVal+="Emit History: "+k.getValue().toString()+"\n";
+				retVal+="MvgAvg: "+HelperFuncs.computeMovAvg(k.getValue())+"\n";
+			}
+		}
+		return retVal;
+	}
+	
 	public String printExecuteThroughputHistory(){
 		String retVal="";
 		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this.executeThroughputHistory.entrySet()) {
@@ -568,12 +594,11 @@ public class GetStats {
 
 	public static Long getBoltStatLongValueFromMap(
 			Map<String, Map<GlobalStreamId, Long>> map, String statName) {
-		Long statValue = null;
+		Long statValue = Long.valueOf(0);
 		Map<GlobalStreamId, Long> intermediateMap = map.get(statName);
-		Set<GlobalStreamId> key = intermediateMap.keySet();
-		if (key.size() > 0) {
-			Iterator<GlobalStreamId> itr = key.iterator();
-			statValue = intermediateMap.get(itr.next());
+		
+		for(Long val : intermediateMap.values()) {
+			statValue+=val;
 		}
 		return statValue;
 	}
