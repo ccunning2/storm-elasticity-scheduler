@@ -65,28 +65,66 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 				}
 			}
 			if(in>1.2*out){
-				IOMap.put(i.getKey(), in-out);
+				Double io=in-out;
+				IOMap.put(i.getKey(), io);
+				LOG.info("component: {} IO overflow: {}"+i.getKey()+io);
 			}	
 		}
 		IORankMap.putAll(IOMap);
 			
-				
+		//find all output bolts and their throughput
+		HashMap<String, Double> SinkMap = new HashMap<String, Double>();
+		Double total_throughput=0.0;
+		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
+			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
+			if(self.children==null){
+				total_throughput+=i.getValue();	
+			}
+		}
+		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
+			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
+			if(self.children==null){
+				LOG.info("sink: {} throughput percentage: {}"+i.getKey()+i.getValue());
+				SinkMap.put(i.getKey(),i.getValue());
+			}
+		}
 		
+		//Traverse tree for each node, finding the effective percentage of each component
 		/**adding final percentage to the map**/
 		HashMap<Component, Integer> rankMap = new HashMap<Component, Integer>();
 
 		ComponentComparator bvc = new ComponentComparator(rankMap);
-		TreeMap<Component, Integer> retMap = new TreeMap<Component, Integer>(
-				bvc);
+		TreeMap<Component, Integer> retMap = new TreeMap<Component, Integer>(bvc);
 		for (Map.Entry<String, Component> entry : map.entrySet()) {
-			rankMap.put(entry.getValue(), entry.getValue().children.size()
-					+ entry.getValue().parents.size());
+			Component self=entry.getValue();
+			Double score=RecursiveFind(self,SinkMap)*100;
+			LOG.info("sink: {} effective throughput percentage: {}"+self.id+score);
+			rankMap.put(self, score.intValue());
 		}
 		retMap.putAll(rankMap);
 		return retMap;
 	}
 
 	
+	private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap) {
+		// TODO Auto-generated method stub
+		if(self.children==null){
+			return sinkMap.get(self.id);//this branch leads to a final value with no overflowed node between
+		}
+		Double sum=0.0;
+		for (int i=0; i<self.children.size();i++){
+			if(sinkMap.get(self.children.get(i))!=null){//if child is also overflowed, return 0 on this branch
+				continue;//ignore this branch move forward
+			}
+			else{
+				Component child=this._globalState.components.get(this._topo.getId()).get(self.children.get(i));//lookup child's component
+				sum+=RecursiveFind(child,sinkMap);
+			}	
+		}
+		return sum;
+	}
+
+
 	public class ComponentComparatorDouble implements Comparator<String> {
 
 		HashMap<String, Double> base;
