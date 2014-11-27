@@ -59,7 +59,7 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 			Double out=i.getValue();
 			Double in=0.0;
 			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-			if(self.parents!=null){
+			if(self.parents.size()==0){
 				for(String parent: self.parents){
 					in+=EmitRateMap.get(parent);
 				}
@@ -77,15 +77,15 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 		Double total_throughput=0.0;
 		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
 			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-			if(self.children==null){
-				LOG.info("the sink {} has throughput {}", self.id, i.getValue());
+			if(self.children.size()==0){
+				LOG.info("the sink {} has throughput {}", i.getKey(), i.getValue());
 				total_throughput+=i.getValue();	
 			}
 		}
 		LOG.info("total throughput: {} ", total_throughput);
 		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
 			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-			if(self.children==null){
+			if(self.children.size()==0){
 				LOG.info("sink: {} throughput percentage: {}", i.getKey(), (i.getValue())/total_throughput);
 				SinkMap.put(i.getKey(),(i.getValue())/total_throughput);
 			}
@@ -110,7 +110,7 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 	
 	private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap) {
 		// TODO Auto-generated method stub
-		if(self.children==null){
+		if(self.children.size()==0){
 			return sinkMap.get(self.id);//this branch leads to a final value with no overflowed node between
 		}
 		Double sum=0.0;
