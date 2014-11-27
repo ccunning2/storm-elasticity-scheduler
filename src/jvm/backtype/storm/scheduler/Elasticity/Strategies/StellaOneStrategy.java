@@ -32,25 +32,25 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
 			LOG.info("Topology: {}", i.getKey());
 			for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
-				LOG.info("Component: {}"+k.getKey());
-				LOG.info("Emit History: "+k.getValue());
-				LOG.info("MvgAvg: {}"+HelperFuncs.computeMovAvg(k.getValue()));
+				LOG.info("Component: {}", k.getKey());
+				LOG.info("Emit History: ", k.getValue());
+				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));
 				EmitRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
 			}
 		}
-		
+		LOG.info("Emit Rate: {}", EmitRateMap);
 		//construct a map for emit throughput for each component
 		HashMap<String, Double> ExecuteRateMap = new HashMap<String, Double>();
 		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.executeThroughputHistory.entrySet()) {
 			LOG.info("Topology: {}", i.getKey());
 			for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
-				LOG.info("Component: {}"+k.getKey());
-				LOG.info("Execute History: "+k.getValue());
-				LOG.info("MvgAvg: {}"+HelperFuncs.computeMovAvg(k.getValue()));
+				LOG.info("Component: {}", k.getKey());
+				LOG.info("Execute History: ", k.getValue());
+				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));
 				ExecuteRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
 			}
 		}
-
+		LOG.info("Execute Rate: {}", ExecuteRateMap);
 		//construct a map for in-out throughput for each component
 		HashMap<String, Double> IOMap = new HashMap<String, Double>();
 		ComponentComparatorDouble bvc1 = new ComponentComparatorDouble(IOMap);
@@ -59,7 +59,7 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 			Double out=i.getValue();
 			Double in=0.0;
 			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-			if(self.parents!=null){
+			if(self.parents.size()==0){
 				for(String parent: self.parents){
 					in+=EmitRateMap.get(parent);
 				}
@@ -67,7 +67,7 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 			if(in>1.2*out){
 				Double io=in-out;
 				IOMap.put(i.getKey(), io);
-				LOG.info("component: {} IO overflow: {}"+i.getKey()+io);
+				LOG.info("component: {} IO overflow: {}", i.getKey(), io);
 			}	
 		}
 		IORankMap.putAll(IOMap);
@@ -77,15 +77,17 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 		Double total_throughput=0.0;
 		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
 			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-			if(self.children==null){
+			if(self.children.size()==0){
+				LOG.info("the sink {} has throughput {}", i.getKey(), i.getValue());
 				total_throughput+=i.getValue();	
 			}
 		}
+		LOG.info("total throughput: {} ", total_throughput);
 		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
 			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-			if(self.children==null){
-				LOG.info("sink: {} throughput percentage: {}"+i.getKey()+i.getValue());
-				SinkMap.put(i.getKey(),i.getValue());
+			if(self.children.size()==0){
+				LOG.info("sink: {} throughput percentage: {}", i.getKey(), (i.getValue())/total_throughput);
+				SinkMap.put(i.getKey(),(i.getValue())/total_throughput);
 			}
 		}
 		
@@ -98,7 +100,7 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 		for (Map.Entry<String, Component> entry : map.entrySet()) {
 			Component self=entry.getValue();
 			Double score=RecursiveFind(self,SinkMap)*100;
-			LOG.info("sink: {} effective throughput percentage: {}"+self.id+score);
+			LOG.info("sink: {} effective throughput percentage: {}", self.id, score);
 			rankMap.put(self, score.intValue());
 		}
 		retMap.putAll(rankMap);
@@ -108,7 +110,7 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 	
 	private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap) {
 		// TODO Auto-generated method stub
-		if(self.children==null){
+		if(self.children.size()==0){
 			return sinkMap.get(self.id);//this branch leads to a final value with no overflowed node between
 		}
 		Double sum=0.0;
