@@ -171,8 +171,8 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 
 			ComponentComparator bvc = new ComponentComparator(rankMap);
 			TreeMap<Component, Integer> retMap = new TreeMap<Component, Integer>(bvc);
-			for (Map.Entry<String, Component> entry : map.entrySet()) {
-				Component self=entry.getValue();
+			for (Map.Entry<String, Double> entry : IOMap.entrySet()) {
+				Component self=this._globalState.components.get(this._topo.getId()).get(entry.getKey());
 				Double score=RecursiveFind(self,SinkMap,IOMap)*100;
 				LOG.info("sink: {} effective throughput percentage: {}", self.id, score);
 				rankMap.put(self, score.intValue());
