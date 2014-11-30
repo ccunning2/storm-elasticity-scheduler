@@ -108,6 +108,7 @@ public class StellaOneStrategy extends TopologyHeuristicStrategy {
 	}
 
 	
+	
 	private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap) {
 		// TODO Auto-generated method stub
 		if(self.children.size()==0){
