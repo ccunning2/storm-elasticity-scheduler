@@ -133,7 +133,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				Double out=i.getValue();
 				Double in=0.0;
 				Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-				if(self.parents.size()==0){
+				if(self.parents.size()!=0){
 					for(String parent: self.parents){
 						in+=ExpectedEmitRateMap.get(parent);
 					}
