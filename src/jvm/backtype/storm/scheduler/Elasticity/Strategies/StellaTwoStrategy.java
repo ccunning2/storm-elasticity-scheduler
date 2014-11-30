@@ -168,18 +168,23 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 			//Traverse tree for each node, finding the effective percentage of each component
 			/**adding final percentage to the map**/
 			HashMap<Component, Integer> rankMap = new HashMap<Component, Integer>();
-
-			ComponentComparator bvc = new ComponentComparator(rankMap);
-			TreeMap<Component, Integer> retMap = new TreeMap<Component, Integer>(bvc);
 			for (Map.Entry<String, Double> entry : IOMap.entrySet()) {
 				Component self=this._globalState.components.get(this._topo.getId()).get(entry.getKey());
 				Double score=RecursiveFind(self,SinkMap,IOMap)*100;
 				LOG.info("sink: {} effective throughput percentage: {}", self.id, score);
 				rankMap.put(self, score.intValue());
+					
 			}
-			retMap.putAll(rankMap);
-			LOG.info("RANK OF {} ITERATION: {}", j, rankMap);
-			Component top = retMap.firstKey();
+		
+			Integer max=0;
+			Component top=null;
+			for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
+				if(e.getValue()>=0){
+					top=e.getKey();
+					max=e.getValue();
+				}					
+			}
+			LOG.info("TOP OF {} ITERATION: {}", j, top);
 			ret.add(top);
 			//update throughput map 
 			//update exectue rate map
