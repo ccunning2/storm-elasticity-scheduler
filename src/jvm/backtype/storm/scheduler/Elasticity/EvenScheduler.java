@@ -29,8 +29,8 @@ public class EvenScheduler implements IScheduler{
 	@Override
 	public void schedule(Topologies topologies, Cluster cluster) {
 		LOG.info("\n\n\nRerunning EvenScheduler...");
-		//GetStats gs = GetStats.getInstance("EvenScheduler");
-		//gs.getStatistics();
+		GetStats gs = GetStats.getInstance("EvenScheduler");
+		gs.getStatistics();
 
 
 		//from 
@@ -45,18 +45,18 @@ public class EvenScheduler implements IScheduler{
 		/**
 		 * Get stats
 		 */
-		GetStats stats = GetStats.getInstance("EvenScheduler");
+		//GetStats stats = GetStats.getInstance("EvenScheduler");
 		//stats.getStatistics();
-		LOG.info(stats.printTransferThroughputHistory());
-		LOG.info(stats.printEmitThroughputHistory());
-		LOG.info(stats.printExecuteThroughputHistory());
+		LOG.info(gs.printTransferThroughputHistory());
+		LOG.info(gs.printEmitThroughputHistory());
+		LOG.info(gs.printExecuteThroughputHistory());
 		/**
 		 * Start hardware monitoring server
 		 */
 		Master server = Master.getInstance();
 		for (TopologyDetails topo : topologies.getTopologies()) {
 			StellaTwoStrategy s = new StellaTwoStrategy(
-					globalState, stats, topo, cluster,
+					globalState, gs, topo, cluster,
 					topologies);
 			TreeMap<Component, Integer> tMap = s.Strategy(null);
 		}
