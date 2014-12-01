@@ -26,6 +26,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 	HashMap<String, Double> ExpectedExecuteRateMap = new HashMap<String, Double>();
 	HashMap<String, Double> EmitRateMap = new HashMap<String, Double>();
 	HashMap<String, Double> ExecuteRateMap = new HashMap<String, Double>();
+	HashMap<String, Integer> ParallelismMap = new HashMap<String, Integer>();
 	int count=4;
 	
 	public StellaTwoStrategy(GlobalState globalState, GetStats getStats,
@@ -78,6 +79,18 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 		}
 		LOG.info("Execute Rate: {}", ExecuteRateMap);
 		this.ExpectedExecuteRateMap.putAll(ExecuteRateMap);
+		
+		//parallelism map
+		this.ParallelismMap = new HashMap<String, Integer>();
+		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
+			LOG.info("Topology: {}", i.getKey());
+			for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
+				Component self=this._globalState.components.get(this._topo.getId()).get(k.getKey());
+				LOG.info("Component: {}", self.id);
+				LOG.info("parallelism level: {}", self.execs.size());
+				this.ParallelismMap.put(self.id, self.execs.size());
+			}
+		}
 	}
 
 	private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap, HashMap<String, Double> iOMap) {
@@ -176,12 +189,14 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 					
 			}
 		
-			Integer max=0;
+			Double max=0.0;
 			Component top=null;
 			for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
-				if(e.getValue()>=max){
+				Integer outpercentage=e.getValue();
+				Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey());
+				if(improve_potential>=max){
 					top=e.getKey();
-					max=e.getValue();
+					max=improve_potential;
 				}					
 			}
 			if(top!=null){
@@ -189,9 +204,12 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				ret.add(top);
 				//update throughput map 
 				//update exectue rate map
-				ExpectedExecuteRateMap.put(top.id, 1.25*ExpectedExecuteRateMap.get(top.id));
+				int current_pllsm=this.ParallelismMap.get(top.id);
+				ExpectedExecuteRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedExecuteRateMap.get(top.id));
 				//update emit rate map
-				ExpectedEmitRateMap.put(top.id, 1.25*ExpectedEmitRateMap.get(top.id));
+				ExpectedEmitRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedEmitRateMap.get(top.id));
+				//update parallelism map
+				this.ParallelismMap.put(top.id, current_pllsm+1);
 			}			
 		}
 		LOG.info("List of components that need to be parallelized:{}",ret);
