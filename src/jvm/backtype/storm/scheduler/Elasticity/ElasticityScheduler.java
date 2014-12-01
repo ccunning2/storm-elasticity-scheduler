@@ -63,6 +63,11 @@ public class ElasticityScheduler implements IScheduler {
 			globalState.logTopologyInfo(topo);
 			String status = HelperFuncs.getStatus(topo.getId());
 			LOG.info("status: {}", status);
+			StellaTwoStrategy s = new StellaTwoStrategy(
+					globalState, stats, topo, cluster,
+					topologies);
+			Map<WorkerSlot, List<ExecutorDetails>> sMap = s
+					.getNewScheduling();
 			if (status.equals("REBALANCING")) {
 				if (globalState.isBalanced == false) {
 					LOG.info("Rebalancing...{}=={}", cluster
