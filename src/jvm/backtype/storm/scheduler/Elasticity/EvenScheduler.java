@@ -44,7 +44,7 @@ public class EvenScheduler implements IScheduler{
 		/**
 		 * Get stats
 		 */
-		GetStats stats = GetStats.getInstance("ElasticityScheduler");
+		GetStats stats = GetStats.getInstance("EvenScheduler");
 		stats.getStatistics();
 		LOG.info(stats.printTransferThroughputHistory());
 		LOG.info(stats.printEmitThroughputHistory());
