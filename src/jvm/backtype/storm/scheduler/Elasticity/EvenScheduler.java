@@ -2,6 +2,7 @@ package backtype.storm.scheduler.Elasticity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +58,7 @@ public class EvenScheduler implements IScheduler{
 			StellaTwoStrategy s = new StellaTwoStrategy(
 					globalState, stats, topo, cluster,
 					topologies);
-			Map<WorkerSlot, List<ExecutorDetails>> sMap = s
-					.getNewScheduling();
+			TreeMap<Component, Integer> tMap = s.Strategy(null);
 		}
 		
 		//end
