@@ -179,7 +179,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 			Integer max=0;
 			Component top=null;
 			for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
-				if(e.getValue()>=0){
+				if(e.getValue()>=max){
 					top=e.getKey();
 					max=e.getValue();
 				}					
