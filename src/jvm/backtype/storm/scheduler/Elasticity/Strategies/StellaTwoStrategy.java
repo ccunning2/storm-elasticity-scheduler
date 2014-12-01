@@ -184,13 +184,15 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 					max=e.getValue();
 				}					
 			}
-			LOG.info("TOP OF {} ITERATION: {}", j, top);
-			ret.add(top);
-			//update throughput map 
-			//update exectue rate map
-			ExpectedExecuteRateMap.put(top.id, 1.25*ExpectedExecuteRateMap.get(top.id));
-			//update emit rate map
-			ExpectedEmitRateMap.put(top.id, 1.25*ExpectedEmitRateMap.get(top.id));
+			if(top!=null){
+				LOG.info("TOP OF {} ITERATION: {}", j, top);
+				ret.add(top);
+				//update throughput map 
+				//update exectue rate map
+				ExpectedExecuteRateMap.put(top.id, 1.25*ExpectedExecuteRateMap.get(top.id));
+				//update emit rate map
+				ExpectedEmitRateMap.put(top.id, 1.25*ExpectedEmitRateMap.get(top.id));
+			}			
 		}
 		LOG.info("List of components that need to be parallelized:{}",ret);
 		return ret;
