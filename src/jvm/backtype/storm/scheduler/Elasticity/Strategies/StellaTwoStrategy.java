@@ -170,6 +170,10 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				}
 			}
 			LOG.info("total throughput: {} ", total_throughput);
+			if(total_throughput==0.0){
+				LOG.info("No throughput!");
+				continue;//no analysis
+			}
 			for( Map.Entry<String, Double> i : ExpectedEmitRateMap.entrySet()) {
 				Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
 				if(self.children.size()==0){
