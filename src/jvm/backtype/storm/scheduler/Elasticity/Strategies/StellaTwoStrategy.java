@@ -197,7 +197,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 			Component top=null;
 			for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
 				Integer outpercentage=e.getValue();
-				Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey());
+				Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
 				if(improve_potential>=max){
 					top=e.getKey();
 					max=improve_potential;
