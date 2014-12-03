@@ -30,11 +30,13 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 	ArrayList<Component> sourceList=new ArrayList<Component>();
 	int sourceCount;
 	
-	int count=4;
+	int count;
 	
 	public StellaTwoStrategy(GlobalState globalState, GetStats getStats,
 			TopologyDetails topo, Cluster cluster, Topologies topologies) {
 		super(globalState, getStats, topo, cluster, topologies);
+		count=topo.getExecutors().size()/this._cluster.getSupervisors().size();
+		LOG.info("NUMBER OF EXECUTORS WE'RE GOING TO ADD: {}", count);
 	}
 
 	@Override
@@ -62,9 +64,9 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
 			LOG.info("Topology: {}", i.getKey());
 			for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
-				LOG.info("Component: {}", k.getKey());
+				/*LOG.info("Component: {}", k.getKey());
 				LOG.info("Emit History: ", k.getValue());
-				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));
+				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
 				this.EmitRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
 
 			}
@@ -77,9 +79,9 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.executeThroughputHistory.entrySet()) {
 			LOG.info("Topology: {}", i.getKey());
 			for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
-				LOG.info("Component: {}", k.getKey());
+				/*LOG.info("Component: {}", k.getKey());
 				LOG.info("Execute History: ", k.getValue());
-				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));
+				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
 				this.ExecuteRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
 			}
 		}
@@ -209,10 +211,12 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				rankMap.put(self, score.intValue());
 					
 			}
-		
+			//find component with max EETP
 			Double max=0.0;
 			Component top=null;
 			for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
+				if(this.ParallelismMap.get(e.getKey().id)>=findTaskSize(e.getKey()))//cant exceed the threshold
+					continue;
 				Integer outpercentage=e.getValue();
 				Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
 				if(improve_potential>=max){
@@ -249,5 +253,14 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 		}
 		LOG.info("List of components that need to be parallelized:{}",ret);
 		return ret;
+	}
+
+	private Integer findTaskSize(Component key) {
+		// TODO Auto-generated method stub
+		Integer ret=0;
+		for(int i=0; i<key.execs.size();i++){
+			ret=ret + key.execs.get(i).getEndTask() - key.execs.get(i).getStartTask()+1;
+		}
+		return null;
 	}
 }
