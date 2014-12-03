@@ -243,7 +243,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 					ret.put(current_source, 1);
 				}
 				else{
-					ret.put(current_source, ret.get(top)+1);
+					ret.put(current_source, ret.get(current_source)+1);
 				}
 			}
 		}
