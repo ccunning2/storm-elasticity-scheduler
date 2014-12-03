@@ -153,7 +153,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 		init(map);
 		HashMap<Component, Integer> ret=new HashMap<Component, Integer>();
 		
-		for(int j=0;j<4;j++){
+		for(int j=0;j<count;j++){
 			LOG.info("ROUND {}", j);
 			//construct a map for in-out throughput for each component
 			HashMap<String, Double> IOMap = new HashMap<String, Double>();
