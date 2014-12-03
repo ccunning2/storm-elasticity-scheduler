@@ -38,13 +38,13 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 	public TreeMap<Component, Integer> Strategy(Map<String, Component> map) {
 		
 		init(map);
-		ArrayList<Component> arr=new ArrayList<Component>();
+		HashMap<Component, Integer> arr=new HashMap<Component, Integer>();
 		arr=StellaStrategy(map);
 		HashMap<Component, Integer> rankMap = new HashMap<Component, Integer>();
 		ComponentComparator bvc =  new ComponentComparator(rankMap);
 		TreeMap<Component, Integer> IORankMap = new TreeMap<Component, Integer>(bvc);
-		for(int i=0;i<arr.size();i++){
-			rankMap.put(arr.get(i), 1);
+		for(Map.Entry<Component,Integer> e:arr.entrySet() ){
+			rankMap.put(e.getKey(), 1);
 		}
 		IORankMap.putAll(rankMap);
 		return IORankMap;
