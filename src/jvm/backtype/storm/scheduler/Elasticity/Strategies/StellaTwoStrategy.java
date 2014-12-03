@@ -27,6 +27,9 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 	HashMap<String, Double> EmitRateMap = new HashMap<String, Double>();
 	HashMap<String, Double> ExecuteRateMap = new HashMap<String, Double>();
 	HashMap<String, Integer> ParallelismMap = new HashMap<String, Integer>();
+	ArrayList<Component> sourceList=new ArrayList<Component>();
+	int sourceCount;
+	
 	int count=4;
 	
 	public StellaTwoStrategy(GlobalState globalState, GetStats getStats,
@@ -55,6 +58,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 	private void init(Map<String, Component> map) {
 		// TODO Auto-generated method stub
 		this.EmitRateMap = new HashMap<String, Double>();
+		
 		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
 			LOG.info("Topology: {}", i.getKey());
 			for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
@@ -62,10 +66,12 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				LOG.info("Emit History: ", k.getValue());
 				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));
 				this.EmitRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
+
 			}
 		}
 		LOG.info("Emit Rate: {}", EmitRateMap);
 		this.ExpectedEmitRateMap.putAll(EmitRateMap);
+		
 		//construct a map for emit throughput for each component
 		this.ExecuteRateMap = new HashMap<String, Double>();
 		for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.executeThroughputHistory.entrySet()) {
@@ -91,6 +97,17 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				this.ParallelismMap.put(self.id, self.execs.size());
 			}
 		}
+		
+		//source list, in case we need to speed up the entire thing
+		this.sourceList=new ArrayList<Component>();
+		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
+			Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
+			if(self.parents.size()==0){
+				this.sourceList.add(self);
+			}
+		}
+		this.sourceCount=0;
+		
 	}
 
 	private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap, HashMap<String, Double> iOMap) {
@@ -219,7 +236,16 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				ExpectedEmitRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedEmitRateMap.get(top.id));
 				//update parallelism map
 				this.ParallelismMap.put(top.id, current_pllsm+1);
-			}			
+			}
+			else{
+				Component current_source=this.sourceList.get(sourceCount%(this.sourceList.size()));
+				if(ret.containsKey(current_source)==false){//if top is source in the return map yet
+					ret.put(current_source, 1);
+				}
+				else{
+					ret.put(current_source, ret.get(top)+1);
+				}
+			}
 		}
 		LOG.info("List of components that need to be parallelized:{}",ret);
 		return ret;
