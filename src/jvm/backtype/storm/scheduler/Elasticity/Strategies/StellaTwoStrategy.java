@@ -130,11 +130,11 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 	}
 
 	
-	public ArrayList<Component> StellaStrategy(Map<String, Component> map) {
+	public HashMap<Component, Integer> StellaStrategy(Map<String, Component> map) {
 		// TODO Auto-generated method stub
 		//construct a map for emit throughput for each component
 		init(map);
-		ArrayList<Component> ret=new ArrayList<Component>();
+		HashMap<Component, Integer> ret=new HashMap<Component, Integer>();
 		
 		for(int j=0;j<4;j++){
 			LOG.info("ROUND {}", j);
@@ -205,7 +205,12 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 			}
 			if(top!=null){
 				LOG.info("TOP OF {} ITERATION: {}", j, top);
-				ret.add(top);
+				if(ret.containsKey(top)==false){//if top is not in the return map yet
+					ret.put(top, 1);
+				}
+				else{
+					ret.put(top, ret.get(top)+1);
+				}
 				//update throughput map 
 				//update exectue rate map
 				int current_pllsm=this.ParallelismMap.get(top.id);
