@@ -1,14 +1,17 @@
 package backtype.storm.scheduler.Elasticity;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.apache.thrift.TException;
@@ -19,13 +22,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import backtype.storm.generated.ClusterSummary;
+import backtype.storm.generated.ExecutorInfo;
+import backtype.storm.generated.ExecutorSummary;
+import backtype.storm.generated.InvalidTopologyException;
 import backtype.storm.generated.Nimbus;
+import backtype.storm.generated.NotAliveException;
+import backtype.storm.generated.RebalanceOptions;
 import backtype.storm.generated.TopologySummary;
 import backtype.storm.scheduler.Cluster;
 import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.scheduler.TopologyDetails;
 import backtype.storm.scheduler.WorkerSlot;
+import backtype.storm.utils.Utils;
 
 public class HelperFuncs {
 	private static final Logger LOG = LoggerFactory
@@ -223,5 +232,118 @@ public class HelperFuncs {
 		} catch (IOException ex) {
 			LOG.info("error! writin to file {}", ex);
 		}
+	}
+	
+	public static void changeParallelism2(Map<Component, Integer> compMap, TopologyDetails topo) {
+		String cmd = "/var/storm/storm_0/bin/storm rebalance -w 0 "+topo.getName();
+		for(Entry<Component, Integer> entry : compMap.entrySet()) {
+			Integer parallelism_hint = entry.getKey().execs.size() + entry.getValue();
+			String component_id = entry.getKey().id;
+			LOG.info("Increasing parallelism to {} of component {} in topo {}", new Object[]{parallelism_hint, component_id, topo.getName()});
+			cmd+=" -e "+component_id+"="+parallelism_hint;
+		}
+
+		//StringBuffer output = new StringBuffer();
+
+		Process p;
+		try {
+			LOG.info("cmd: {}", cmd);
+			p = Runtime.getRuntime().exec(cmd);
+			//p.waitFor();
+			//BufferedReader reader = new BufferedReader(new InputStreamReader(
+			//		p.getInputStream()));
+
+			//String line = "";
+//			while ((line = reader.readLine()) != null) {
+//				output.append(line + "\n");
+//			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		//LOG.info(output.toString());
+	}
+	public static void changeParallelism(TopologyDetails topo, String component_id, Integer parallelism_hint) {
+		LOG.info("Increasing parallelism to {} of component {} in topo {}", new Object[]{parallelism_hint, component_id, topo.getName()});
+		TSocket tsocket = new TSocket("localhost", 6627);
+		TFramedTransport tTransport = new TFramedTransport(tsocket);
+		TBinaryProtocol tBinaryProtocol = new TBinaryProtocol(tTransport);
+		Nimbus.Client client = new Nimbus.Client(tBinaryProtocol);
+		try {
+			tTransport.open();
+			LOG.info("Activating: {}", topo.getId());
+			//client.activate(topo.getId());
+			//client.activate(topo.getName());
+		    ///Utils.sleep(30000);
+
+			//client.getTopology(topo_id).get_bolts().get(component_id).get_common().set_parallelism_hint(parallelism_hint);
+			
+			LOG.info("Parallelsim_hint: {}", client.getTopology(topo.getId()).get_bolts().get(component_id).get_common().get_parallelism_hint());
+			
+			//client.getTopologyInfo(topo_id).set_status("ACTIVE");
+			
+		
+			//client.getTopologyInfo(topo_id).set_executors(executors);
+			RebalanceOptions options = new RebalanceOptions();
+			Map<String, Integer> num_executors = new HashMap<String, Integer>();
+			//num_executors.put(component_id, parallelism_hint);
+			//num_executors.put("word", 10);
+			//num_executors.put("exclaim", 3);
+			//options.set_num_executors(num_executors);
+			options.put_to_num_executors(component_id, parallelism_hint);
+			options.set_wait_secs(0);
+			client.rebalance(topo.getName(), options);
+			LOG.info("rebalance done!");
+			//client.
+			
+			//LOG.info("Parallelsim_hint: {}", client.getTopology(topo_id).get_bolts().get(component_id).get_common().get_parallelism_hint());
+			
+		} catch (TException e) {
+			e.printStackTrace();
+			LOG.info(e.toString());
+		} catch (NotAliveException e) {
+			e.printStackTrace();
+			LOG.info(e.toString());
+			LOG.info(e.get_msg());
+			LOG.info(e.getMessage());
+			LOG.info(e.getStackTrace().toString());
+		} catch (InvalidTopologyException e) {
+			e.printStackTrace();
+			LOG.info(e.toString());
+		}
+		
+		try {
+			LOG.info("Parallelsim_hint: {}", client.getTopology(topo.getId()).get_bolts().get(component_id).get_common().get_parallelism_hint());
+		} catch (NotAliveException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	public static Map<String, Integer> taskRange(List<ExecutorDetails> execs) {
+		Map<String, Integer> retMap = new HashMap<String, Integer>();
+		retMap.put("start", null);
+		retMap.put("end", null);
+		for (ExecutorDetails exec : execs) {
+			if(retMap.get("start") == null) {
+				retMap.put("start", exec.getStartTask());
+			}
+			if(retMap.get("end") == null) {
+				retMap.put("end", exec.getEndTask());
+			}
+			
+			if(retMap.get("start") > exec.getStartTask()) {
+				retMap.put("start", exec.getStartTask());
+			}
+			if(retMap.get("end") < exec.getEndTask()) {
+				retMap.put("end", exec.getEndTask());
+			}
+		}
+		return retMap;
 	}
 }

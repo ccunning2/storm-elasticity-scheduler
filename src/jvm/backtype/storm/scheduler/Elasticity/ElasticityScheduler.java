@@ -18,6 +18,7 @@ import backtype.storm.scheduler.EvenScheduler;
 import backtype.storm.scheduler.TopologyDetails;
 import backtype.storm.scheduler.WorkerSlot;
 import backtype.storm.scheduler.Elasticity.GetStats.ComponentStats;
+import backtype.storm.scheduler.Elasticity.MsgServer.MsgServer;
 import backtype.storm.scheduler.Elasticity.Strategies.*;
 
 public class ElasticityScheduler implements IScheduler {
@@ -34,11 +35,17 @@ public class ElasticityScheduler implements IScheduler {
 	@Override
 	public void schedule(Topologies topologies, Cluster cluster) {
 		LOG.info("\n\n\nRerunning ElasticityScheduler...");
-		
+
+		/**
+		 * Starting msg server
+		 */
+		MsgServer msgServer = MsgServer.start(5001);
+
 		/**
 		 * Get Global info
 		 */
-		GlobalState globalState = GlobalState.getInstance("ElasticityScheduler");
+		GlobalState globalState = GlobalState
+				.getInstance("ElasticityScheduler");
 		globalState.updateInfo(cluster, topologies);
 
 		LOG.info("Global State:\n{}", globalState);
@@ -63,7 +70,22 @@ public class ElasticityScheduler implements IScheduler {
 			globalState.logTopologyInfo(topo);
 			String status = HelperFuncs.getStatus(topo.getId());
 			LOG.info("status: {}", status);
-			if (status.equals("REBALANCING")) {
+			if (msgServer.isRebalance() == true) {
+				if (globalState.stateEmpty() == false) {
+					List<Node> newNodes = globalState.getNewNode();
+					
+					if (newNodes.size() > 0) {
+
+						LOG.info("Increasing parallelism...");
+						StellaStrategy strategy = new StellaStrategy(globalState, stats, topo, cluster, topologies);
+						HashMap<Component, Integer> compMap = strategy.StellaStrategy(new HashMap<String, Component>());
+						
+						HelperFuncs.changeParallelism2(compMap, topo);
+
+					}
+
+				}
+			} else if (status.equals("REBALANCING")) {
 				if (globalState.isBalanced == false) {
 					LOG.info("Rebalancing...{}=={}", cluster
 							.getUnassignedExecutors(topo).size(), topo
@@ -71,26 +93,28 @@ public class ElasticityScheduler implements IScheduler {
 					if (cluster.getUnassignedExecutors(topo).size() == topo
 							.getExecutors().size()) {
 						if (globalState.stateEmpty() == false) {
+							LOG.info("Unassigned executors: {}", cluster.getUnassignedExecutors(topo));
 							LOG.info("Making migration assignments...");
-							
-							LeastLinkLoad strategy = new LeastLinkLoad(
+							globalState.schedState.get(topo.getId());
+
+							IncreaseParallelism strategy = new IncreaseParallelism(
 									globalState, stats, topo, cluster,
 									topologies);
 							Map<WorkerSlot, List<ExecutorDetails>> schedMap = strategy
 									.getNewScheduling();
-							if(schedMap != null) {
+							LOG.info("SchedMap: {}", schedMap);
+							if (schedMap != null) {
 								for (Map.Entry<WorkerSlot, List<ExecutorDetails>> sched : schedMap
 										.entrySet()) {
-									HelperFuncs.assignTasks(sched.getKey(),
-											topo.getId(), sched.getValue(),
-											cluster, topologies);
-									LOG.info("Assigning {}=>{}", sched.getKey(),
-											sched.getValue());
+									cluster.assign(sched.getKey(),
+											topo.getId(), sched.getValue());
+									LOG.info("Assigning {}=>{}",
+											sched.getKey(), sched.getValue());
 								}
 							}
-							
+
 						}
-						
+
 						globalState.isBalanced = true;
 					}
 				}
