@@ -99,7 +99,7 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 				this.ParallelismMap.put(self.id, self.execs.size());
 			}
 		}
-		
+		LOG.info("parallelism map: {}", this.ParallelismMap);
 		//source list, in case we need to speed up the entire thing
 		this.sourceList=new ArrayList<Component>();
 		for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
@@ -215,6 +215,8 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 			Double max=0.0;
 			Component top=null;
 			for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
+				LOG.info("current component: {}",e.getKey().id);
+				LOG.info("expected component parallelism level: {}",this.ParallelismMap.get(e.getKey().id));
 				if(this.ParallelismMap.get(e.getKey().id)>=findTaskSize(e.getKey()))//cant exceed the threshold
 					continue;
 				Integer outpercentage=e.getValue();
@@ -261,6 +263,6 @@ public class StellaTwoStrategy extends TopologyHeuristicStrategy {
 		for(int i=0; i<key.execs.size();i++){
 			ret=ret + key.execs.get(i).getEndTask() - key.execs.get(i).getStartTask()+1;
 		}
-		return null;
+		return ret;
 	}
 }
