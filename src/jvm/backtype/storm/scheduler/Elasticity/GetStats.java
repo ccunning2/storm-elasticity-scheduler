@@ -110,6 +110,10 @@ public class GetStats {
 	 * Topology_id->(Component_Id->List of previous throughputs)
 	 */
 	public HashMap<String, HashMap<String, List<Integer>>> executeThroughputHistory;
+	
+	public HashMap<String, Integer> executeRatesTable;
+
+	public HashMap<String, Integer> emitRatesTable;
 	/**
 	 * File output
 	 */
@@ -118,6 +122,8 @@ public class GetStats {
 	private File output_bolt_log;
 	private File component_log;
 	private String sched_type;
+
+	
 	
 
 	private final static Integer MOVING_AVG_WINDOW = 30;
@@ -128,6 +134,8 @@ public class GetStats {
 		this.transferStatsTable = new HashMap<String, Integer>();
 		this.emitStatsTable = new HashMap<String, Integer>();
 		this.executeStatsTable = new HashMap<String, Integer>();
+		this.executeRatesTable = new HashMap<String, Integer>();
+		this.emitRatesTable = new HashMap<String, Integer>();
 		this.emitThroughputHistory = new HashMap<String, HashMap<String, List<Integer>>>();
 		this.transferThroughputHistory = new HashMap<String, HashMap<String, List<Integer>>>();
 		this.executeThroughputHistory = new HashMap<String, HashMap<String, List<Integer>>>();
@@ -261,6 +269,11 @@ public class GetStats {
 									this.executeStatsTable.put(hash_id,
 											totalExecuted);
 								}
+								if (this.executeRatesTable.containsKey(hash_id) == false) {
+
+									this.executeRatesTable.put(hash_id,
+											0);
+								}
 								// LOG.info("Executor {}: GLOBAL STREAM ID: {}",taskId,
 								// boltStats.get_executed());
 							}
@@ -272,16 +285,25 @@ public class GetStats {
 						}
 						if (this.emitStatsTable.containsKey(hash_id) == false) {
 							this.emitStatsTable.put(hash_id, totalEmitOutput);
+							this.emitRatesTable.put(hash_id, 0);
 						}
 
 						// get throughput
 						Integer transfer_throughput = totalTransferOutput
 								- this.transferStatsTable.get(hash_id);
+						if(transfer_throughput < 0) {
+							transfer_throughput = 0;
+						}
 						Integer emit_throughput = totalEmitOutput
 								- this.emitStatsTable.get(hash_id);
+						if(emit_throughput < 0) {
+							emit_throughput = 0;
+						}
+						this.emitRatesTable.put(hash_id, emit_throughput);
 						Integer execute_throughput = 0;
 						if(this.executeStatsTable.containsKey(hash_id) == true) {
 							 execute_throughput = totalExecuted-this.executeStatsTable.get(hash_id);
+							 this.executeRatesTable.put(hash_id, execute_throughput);
 						}
 
 						LOG.info((host + ':' + port + ':' + componentId + ":"
@@ -344,7 +366,7 @@ public class GetStats {
 						String data = String.valueOf(unixTime) + ':'
 								+ this.sched_type + ":" + host + ':' + port
 								+ ':' + componentId + ":" + topo.get_id() + ":"
-								+ taskId + "," + transfer_throughput + "\n";
+								+ taskId + ":" + transfer_throughput + ","+emit_throughput+","+execute_throughput+"\n";
 
 						// write log to file
 						HelperFuncs.writeToFile(this.complete_log, data);
@@ -466,7 +488,7 @@ public class GetStats {
 				
 				data = String.valueOf(unixTime) + ":"+this.sched_type + ":"+ cs.getValue().componentId
 						+ ":" + cs.getValue().parallelism_hint + ":" + topo.get_id() + ":"
-						+ avg_emit_throughput + "\n";
+						+ cs.getValue().total_emit_throughput + "\n";
 			} else {
 				LOG.info(
 						"Component: {} total throughput (transfer): {} (emit): {} (execute): {} avg throughput (transfer): {} (emit): {} (execute): {}",
@@ -477,7 +499,7 @@ public class GetStats {
 								avg_transfer_throughput, avg_emit_throughput, avg_emit_throughput });
 				data = String.valueOf(unixTime) + ":"+this.sched_type + ":"+ cs.getValue().componentId
 						+ ":" + cs.getValue().parallelism_hint + ":" + topo.get_id() + ":"
-						+ avg_transfer_throughput + "\n";
+						+ cs.getValue().total_transfer_throughput + "\n";
 			}
 			
 			

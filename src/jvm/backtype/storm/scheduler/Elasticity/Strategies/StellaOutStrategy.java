@@ -20,7 +20,7 @@ import backtype.storm.scheduler.Elasticity.Strategies.TopologyHeuristicStrategy.
  * rank percentage of effect of each node
  * @author Le
  */
-public class StellaStrategy extends TopologyHeuristicStrategy {
+public class StellaOutStrategy extends TopologyHeuristicStrategy {
 	
 	HashMap<String, Double> ExpectedEmitRateMap = new HashMap<String, Double>();
 	HashMap<String, Double> ExpectedExecuteRateMap = new HashMap<String, Double>();
@@ -32,10 +32,10 @@ public class StellaStrategy extends TopologyHeuristicStrategy {
 	
 	int count;
 	
-	public StellaStrategy(GlobalState globalState, GetStats getStats,
+	public StellaOutStrategy(GlobalState globalState, GetStats getStats,
 			TopologyDetails topo, Cluster cluster, Topologies topologies) {
 		super(globalState, getStats, topo, cluster, topologies);
-		count=3;
+		count=topo.getExecutors().size()/this._cluster.getSupervisors().size();
 		LOG.info("NUMBER OF EXECUTORS WE'RE GOING TO ADD: {}", count);
 	}
 
