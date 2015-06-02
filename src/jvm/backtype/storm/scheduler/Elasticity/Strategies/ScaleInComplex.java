@@ -50,20 +50,26 @@ public class ScaleInComplex {
 	public void removeNodeBySupervisorId(String supervisorId, HashMap<ExecutorDetails, Node> planDetail) {
 		ArrayList<Node> elgibleNodes = this.getElgibleNodes(supervisorId);
 		LOG.info("ElgibleNodes: {}", elgibleNodes);
-		HashMap<String, ArrayList<ExecutorDetails>>compToExecs = this.getCompToExecs(this._globalState.nodes.get(supervisorId).execs);
-		
-		for(Entry<String, ArrayList<ExecutorDetails>> entry : compToExecs.entrySet()) {
-			Component comp = this.getComponent(entry.getKey());
-			for(ExecutorDetails exec : entry.getValue()) {
+		LOG.info("plan detail", planDetail);
+		//HashMap<String, ArrayList<ExecutorDetails>>compToExecs = this.getCompToExecs(this._globalState.nodes.get(supervisorId).execs);
+		for(ExecutorDetails e:planDetail.keySet()){
+			/*for(Entry<String, ArrayList<ExecutorDetails>> entry : compToExecs.entrySet()) {
+			//Component comp = this.getComponent(entry.getKey());
+			//Component comp = this.getComponent(e);
+			//for(ExecutorDetails exec : entry.getValue()) {
 				Node n = planDetail.get(exec);
 				WorkerSlot target = this.getBestSlot(n);
 				this._globalState.migrateTask(exec, target, this._topo);
 				n.execs.add(exec);
 				n.slot_to_exec.get(target).add(exec);
 				LOG.info("migrating {} to ws {} on node {}", new Object[]{exec, target, n.hostname});
-
-
-			}
+			//}*/
+			Node n = planDetail.get(e);
+			WorkerSlot target = this.getBestSlot(n);
+			this._globalState.migrateTask(e, target, this._topo);
+			n.execs.add(e);
+			n.slot_to_exec.get(target).add(e);
+			LOG.info("migrating {} to ws {} on node {}", new Object[]{e, target, n.hostname});
 		}		
 	}
 	
@@ -71,8 +77,9 @@ public class ScaleInComplex {
 		
 		Integer leastUsed = Integer.MAX_VALUE;
 		WorkerSlot target = null;
+		LOG.info("workerslot map: {}",n.slot_to_exec);
 		for(Entry<WorkerSlot, List<ExecutorDetails>> entry : n.slot_to_exec.entrySet()) {
-			if(entry.getValue().size()>0) {
+			//if(entry.getValue().size()>0) {
 				if(target == null) {
 					target = entry.getKey();
 					leastUsed = entry.getValue().size();
@@ -81,7 +88,7 @@ public class ScaleInComplex {
 					target = entry.getKey();
 					leastUsed = entry.getValue().size();
 				}
-			}
+			//}
 		}
 		return target;
 		
