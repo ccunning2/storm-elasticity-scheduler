@@ -1,6 +1,8 @@
 package backtype.storm.scheduler.Elasticity;
 
+import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,8 @@ import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.scheduler.IScheduler;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.scheduler.TopologyDetails;
+import backtype.storm.scheduler.WorkerSlot;
+import backtype.storm.scheduler.Elasticity.Strategies.StellaTwoStrategy;
 
 public class EvenScheduler implements IScheduler{
 	private static final Logger LOG = LoggerFactory
@@ -27,10 +31,41 @@ public class EvenScheduler implements IScheduler{
 		LOG.info("\n\n\nRerunning EvenScheduler...");
 		GetStats gs = GetStats.getInstance("EvenScheduler");
 		gs.getStatistics();
+
+
+		//from 
 		/**
 		 * Get Global info
 		 */
 		GlobalState globalState = GlobalState.getInstance("EvenScheduler");
+		globalState.updateInfo(cluster, topologies);
+
+		LOG.info("Global State:\n{}", globalState);
+
+		/**
+		 * Get stats
+		 */
+		//GetStats stats = GetStats.getInstance("EvenScheduler");
+		//stats.getStatistics();
+		LOG.info(gs.printTransferThroughputHistory());
+		LOG.info(gs.printEmitThroughputHistory());
+		LOG.info(gs.printExecuteThroughputHistory());
+		/**
+		 * Start hardware monitoring server
+		 */
+		Master server = Master.getInstance();
+		for (TopologyDetails topo : topologies.getTopologies()) {
+			StellaTwoStrategy s = new StellaTwoStrategy(
+					globalState, gs, topo, cluster,
+					topologies);
+			TreeMap<Component, Integer> tMap = s.Strategy(null);
+		}
+		
+		//end
+		/**
+		 * Get Global info
+		 */
+		//GlobalState globalState = GlobalState.getInstance("EvenScheduler");
 		globalState.updateInfo(cluster, topologies);
 		globalState.storeState(cluster, topologies);
 		LOG.info("Global State:\n{}", globalState);

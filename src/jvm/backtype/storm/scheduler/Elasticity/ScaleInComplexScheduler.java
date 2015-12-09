@@ -20,8 +20,9 @@ import backtype.storm.scheduler.WorkerSlot;
 import backtype.storm.scheduler.Elasticity.GetStats.ComponentStats;
 import backtype.storm.scheduler.Elasticity.MsgServer.MsgServer;
 import backtype.storm.scheduler.Elasticity.Strategies.*;
+import backtype.storm.scheduler.Elasticity.Strategies.StellaInComplexStrategy.Plan;
 
-public class ElasticityScheduler implements IScheduler {
+public class ScaleInComplexScheduler implements IScheduler {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(ElasticityScheduler.class);
 	@SuppressWarnings("rawtypes")
@@ -77,14 +78,16 @@ public class ElasticityScheduler implements IScheduler {
 				globalState.rebalancingState = MsgServer.Signal.ScaleOut;
 			} else if (signal == MsgServer.Signal.ScaleIn) {
 				LOG.info("/*** Scaling In ***/");
-				StellaInStrategy si = new StellaInStrategy(globalState, stats, topo, cluster, topologies);
-				//Node n = si.StrategyScaleIn();
-				TreeMap<Node, Integer> rankMap = si.StrategyScaleInAll();
-
+				/*StellaInStrategy si = new StellaInStrategy(globalState, stats, topo, cluster, topologies);
+				Node n = si.StrategyScaleIn();
 				
-				ScaleInTestStrategy strategy = new ScaleInTestStrategy(globalState, stats, topo, cluster, topologies, rankMap);
+				ScaleInTestStrategy strategy = new ScaleInTestStrategy(globalState, stats, topo, cluster, topologies);
 				//strategy.removeNodeByHostname("pc345.emulab.net");
-				//strategy.removeNodeBySupervisorId(n.supervisor_id);
+				strategy.removeNodeBySupervisorId(n.supervisor_id);*/
+				StellaInComplexStrategy si = new StellaInComplexStrategy(globalState, stats, topo, cluster, topologies);
+				Plan p=si.StrategyScaleIn();
+				ScaleInComplex strategy = new ScaleInComplex(globalState, stats, topo, cluster, topologies);
+				strategy.removeNodeBySupervisorId(p.target.supervisor_id,p.PlanDetail);
 				Map<WorkerSlot, List<ExecutorDetails>> schedMap = strategy
 						.getNewScheduling();
 				LOG.info("SchedMap: {}", schedMap);
@@ -110,9 +113,15 @@ public class ElasticityScheduler implements IScheduler {
 					LOG.info("{} -> {}", k.getKey(), k.getValue());
 				}
 
-				LOG.info("running EvenScheduler now...");
-				new backtype.storm.scheduler.EvenScheduler().schedule(
-						topologies, cluster);
+				if(cluster.getUnassignedExecutors(topo).size()<topo.getExecutors().size()) {
+					LOG.info("running EvenScheduler now...");
+					new backtype.storm.scheduler.EvenScheduler().schedule(
+							topologies, cluster);
+				} else {
+					LOG.info("running UnEvenScheduler now...");
+					UnevenScheduler2 ns = new UnevenScheduler2(globalState, stats, cluster, topologies);
+					ns.schedule();
+				}
 
 				globalState.storeState(cluster, topologies);
 				globalState.isBalanced = false;
@@ -124,7 +133,9 @@ public class ElasticityScheduler implements IScheduler {
 		if (topologies.getTopologies().size() == 0) {
 			globalState.clearStoreState();
 		}
-
+		
+		
+	
 	}
 	
 	public void scaleOut(MsgServer msgServer, TopologyDetails topo, Topologies topologies, GlobalState globalState, GetStats stats, Cluster cluster) {

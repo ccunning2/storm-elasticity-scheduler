@@ -63,8 +63,6 @@ public class ScaleInComplex {
 				n.execs.add(exec);
 				n.slot_to_exec.get(target).add(exec);
 				LOG.info("migrating {} to ws {} on node {}", new Object[]{exec, target, n.hostname});
-
-
 			//}*/
 			Node n = planDetail.get(e);
 			WorkerSlot target = this.getBestSlot(n);
