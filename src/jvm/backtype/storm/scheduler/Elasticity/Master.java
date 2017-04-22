@@ -1,8 +1,6 @@
 package backtype.storm.scheduler.Elasticity;
 
 
-import Profile;
-import ServerThread;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -60,7 +58,7 @@ class ServerThread implements Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		
+		LOG.info("***In ServerThread run()***");
 		int port = 6789;
 		ServerSocket socket;
 		try {
