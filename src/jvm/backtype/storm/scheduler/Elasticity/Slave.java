@@ -41,7 +41,6 @@ class SlaveWorker implements Runnable{
 			
 			//prf.examine();
 			//send service info
-            System.out.println("In worker run, opening connection...");
             Socket socket = new Socket("10.71.104.210",6789);
 			ObjectOutputStream out=new ObjectOutputStream(socket.getOutputStream());
 			out.flush();
@@ -50,7 +49,7 @@ class SlaveWorker implements Runnable{
 			//out.writeObject(Slave.prf.getBandwidth_in());
 			//out.writeObject(Slave.prf.getBandwidth_out());
 			out.flush();
-            System.out.println("Completed transmission!");
+
         } catch (UnknownHostException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

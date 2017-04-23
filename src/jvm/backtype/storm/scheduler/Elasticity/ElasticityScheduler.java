@@ -67,6 +67,7 @@ public class ElasticityScheduler implements IScheduler {
 		 * Start Scheduling
 		 */
 		for (TopologyDetails topo : topologies.getTopologies()) {
+			server.printStats();
 			globalState.logTopologyInfo(topo);
 			String status = HelperFuncs.getStatus(topo.getId());
 			LOG.info("status: {}", status);

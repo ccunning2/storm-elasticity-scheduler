@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,12 @@ public class Master {
 		t.start();
 	}
 
+	public void printStats() {
+		for(Map.Entry<String, Profile> entry : profile_map.entrySet()) {
+			LOG.info("Machine: {} cpu: {}", entry.getKey(), profile_map.get(entry.getKey()).getCpu_usage());
+		}
+	}
+
 }
 
 class ServerThread implements Runnable{
@@ -65,10 +72,7 @@ class ServerThread implements Runnable{
 			socket = new ServerSocket(port, 10);
 			Socket connection;
 			while(true){
-				LOG.info("In ServerThread while(true)");
 				connection=socket.accept();
-				LOG.info("Waiting for connection...");
-				LOG.info("Connection received from " + connection.getInetAddress().getHostName());
 				ServerWorker worker=new ServerWorker(connection);
 				worker.run();			
 			}
