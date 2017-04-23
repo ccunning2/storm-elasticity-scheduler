@@ -32,7 +32,16 @@ public class GetStats {
 		public ArrayList<ExecutorSummary> bolts_on_node;
 		public ArrayList<ExecutorSummary> spouts_on_node;
 		public Integer emit_throughput;
-		public Integer transfer_throughput;
+		public int transfer_throughput;
+		public Integer transfer_input;
+		public Double cpu;
+		public double tuplePerCpu;
+
+		// public Integer transfer_throughput_total;
+		public Double cpu_estimate;
+		public Integer transfer_throughput_estimate;
+
+
 		// transfer or emit
 		public HashMap<String, Integer> bolts_on_node_throughput;
 		public HashMap<String, Integer> spouts_on_node_throughput;
@@ -49,6 +58,11 @@ public class GetStats {
 			this.spouts_on_node_throughput.put("emit", 0);
 			this.emit_throughput = 0;
 			this.transfer_throughput = 0;
+			this.transfer_input = 0;
+			this.cpu = 0.0;
+			this.tuplePerCpu = 0;
+			this.cpu_estimate = 0.0;
+			this.transfer_throughput_estimate = 0;
 		}
 	}
 
@@ -58,12 +72,24 @@ public class GetStats {
 		public Integer total_transfer_throughput;
 		public Integer total_execute_throughput;
 		public Integer parallelism_hint;
+		public Integer total_transfer_input;
+		public Double io_ratio;
+
+		public Double executor_ratio;
+		public Double cpu_estimate;
+		public Integer transfer_throughput_estimate;
+
 
 		public ComponentStats(String id) {
 			this.componentId = id;
 			this.total_emit_throughput = 0;
 			this.total_transfer_throughput = 0;
 			this.total_execute_throughput = 0;
+			this.total_transfer_input = 0;
+			this.executor_ratio = 0.0;
+			this.cpu_estimate = 0.0;
+			this.transfer_throughput_estimate = 0;
+			this.io_ratio = 0.0;
 		}
 
 	}

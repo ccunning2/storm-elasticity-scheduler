@@ -8,7 +8,8 @@ import java.io.Serializable;
 
 
 public class Profile implements Serializable{
-	
+
+	public String hostname;
 	public String ip;
 	private double cpu_usage;
 	private double bandwidth_in;
@@ -17,8 +18,8 @@ public class Profile implements Serializable{
 	private double current_outoctets;
 	
 	
-	public Profile(String ip) throws IOException{
-		this.ip=ip;
+	public Profile(String hostname) throws IOException{
+		this.hostname = hostname + ".novalocal";
 		this.cpu_usage=0.0;
 		this.bandwidth_in=0.0;
 		this.bandwidth_out=0.0;

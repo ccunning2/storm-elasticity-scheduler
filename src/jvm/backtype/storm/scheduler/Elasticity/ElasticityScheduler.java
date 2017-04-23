@@ -62,7 +62,9 @@ public class ElasticityScheduler implements IScheduler {
 		 * Start hardware monitoring server
 		 */
 		Master server = Master.getInstance();
-		server.printStats();
+		//server.printStats();
+		Whatever what = new Whatever();
+		what.getSchedule();
 
 		/**
 		 * Start Scheduling
