@@ -65,6 +65,7 @@ class ServerThread implements Runnable{
 			socket = new ServerSocket(port, 10);
 			Socket connection;
 			while(true){
+				LOG.info("In ServerThread while(true)");
 				connection=socket.accept();
 				LOG.info("Waiting for connection...");
 				LOG.info("Connection received from " + connection.getInetAddress().getHostName());
