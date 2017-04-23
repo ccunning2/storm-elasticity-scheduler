@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+java -cp /home/ubuntu/storm-elasticity-scheduler/target/storm-elasticity-scheduler-0.10.2.jar backtype.storm.scheduler.Elasticity.Slave
