@@ -100,7 +100,7 @@ class ServerWorker implements Runnable{
 	@Override
 	public void run() {
 		// TODO Auto-generated method stub
-		System.out.println("master in run...");
+		LOG.info("master in run...");
 		try {
 			this.out.flush();
 			
@@ -110,15 +110,15 @@ class ServerWorker implements Runnable{
 			String ip=obj.toString();
 			obj=this.in.readObject();
 			double cpu=Double.valueOf(obj.toString());
-			obj=this.in.readObject();
-			double bandwidth_in=Double.valueOf(obj.toString());
-			obj=this.in.readObject();
-			double bandwidth_out=Double.valueOf(obj.toString());
+//			obj=this.in.readObject();
+//			double bandwidth_in=Double.valueOf(obj.toString());
+//			obj=this.in.readObject();
+//			double bandwidth_out=Double.valueOf(obj.toString());
 			this.out.flush();
 
 			Profile prf=new Profile(ip);
-			prf.setBandwidth_in(bandwidth_in);
-			prf.setBandwidth_out(bandwidth_out);
+//			prf.setBandwidth_in(bandwidth_in);
+//			prf.setBandwidth_out(bandwidth_out);
 			prf.setCpu_usage(cpu);
 			
 			Master.profile_map.put(prf.ip, prf);
