@@ -124,17 +124,17 @@ class ServerWorker implements Runnable{
 			Master.profile_map.put(prf.ip, prf);
 			//print out information
 			System.out.println("host IP address: "+prf.ip);
-			System.out.println(prf.ip+"-Bandwidth_in: "+prf.getBandwidth_in());
-			System.out.println(prf.ip+"-Bandwidth_out: "+prf.getBandwidth_out());
+//			System.out.println(prf.ip+"-Bandwidth_in: "+prf.getBandwidth_in());
+//			System.out.println(prf.ip+"-Bandwidth_out: "+prf.getBandwidth_out());
 			System.out.println(prf.ip+"-cpu_usage: "+prf.getCpu_usage());
 			
 			
-			Master.profile_map.put(prf.ip, prf);
-			//print out information
-			LOG.info("host IP address: "+prf.ip);
-			LOG.info(prf.ip+"-Bandwidth_in: "+prf.getBandwidth_in());
-			LOG.info(prf.ip+"-Bandwidth_out: "+prf.getBandwidth_out());
-			LOG.info(prf.ip+"-cpu_usage: "+prf.getCpu_usage());
+//			Master.profile_map.put(prf.ip, prf);
+//			//print out information
+//			LOG.info("host IP address: "+prf.ip);
+//			LOG.info(prf.ip+"-Bandwidth_in: "+prf.getBandwidth_in());
+//			LOG.info(prf.ip+"-Bandwidth_out: "+prf.getBandwidth_out());
+//			LOG.info(prf.ip+"-cpu_usage: "+prf.getCpu_usage());
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

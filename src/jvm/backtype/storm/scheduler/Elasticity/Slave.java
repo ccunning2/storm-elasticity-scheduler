@@ -1,7 +1,8 @@
 package backtype.storm.scheduler.Elasticity;
+
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
@@ -12,7 +13,11 @@ public class Slave {
 	public static void main (String[] args) throws InterruptedException, IOException{
 	//public static void start () throws UnknownHostException, InterruptedException{
         System.out.println("In main...");
-        prf=new Profile(InetAddress.getLocalHost().getHostAddress());
+		Socket socket = new Socket();
+		socket.connect(new InetSocketAddress("google.com", 80));
+		System.out.println("IP is " + socket.getLocalAddress().getHostAddress());
+		prf=new Profile(socket.getLocalAddress().getHostAddress());
+        socket.close();
 		Thread t=new Thread(new ProfileUpdate());
         System.out.println("Starting profile update thread");
 		t.start();
@@ -42,8 +47,8 @@ class SlaveWorker implements Runnable{
 			out.flush();
 			out.writeObject(Slave.prf.ip);
 			out.writeObject(Slave.prf.getCpu_usage());
-			out.writeObject(Slave.prf.getBandwidth_in());
-			out.writeObject(Slave.prf.getBandwidth_out());
+			//out.writeObject(Slave.prf.getBandwidth_in());
+			//out.writeObject(Slave.prf.getBandwidth_out());
 			out.flush();
             System.out.println("Completed transmission!");
         } catch (UnknownHostException e) {
