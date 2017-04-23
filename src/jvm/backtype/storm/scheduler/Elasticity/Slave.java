@@ -13,11 +13,14 @@ public class Slave {
 	public static void main (String[] args) throws InterruptedException, IOException{
 	//public static void start () throws UnknownHostException, InterruptedException{
         System.out.println("In main...");
-		Socket socket = new Socket();
-		socket.connect(new InetSocketAddress("google.com", 80));
-		System.out.println("IP is " + socket.getLocalAddress().getHostAddress());
-		prf=new Profile(socket.getLocalAddress().getHostAddress());
-        socket.close();
+
+	java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();
+
+
+
+
+		prf=new Profile(localMachine.getHostName());
+       
 		Thread t=new Thread(new ProfileUpdate());
         System.out.println("Starting profile update thread");
 		t.start();
