@@ -34,7 +34,7 @@ class SlaveWorker implements Runnable{
 			
 			//prf.examine();
 			//send service info
-			Socket socket = new Socket("127.0.0.1",6789);
+			Socket socket = new Socket("10.71.104.210",6789);
 			ObjectOutputStream out=new ObjectOutputStream(socket.getOutputStream());
 			out.flush();
 			out.writeObject(Slave.prf.ip);
