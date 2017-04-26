@@ -1,25 +1,18 @@
 package backtype.storm.scheduler.Elasticity;
 
-import java.util.ArrayList;
+import backtype.storm.scheduler.*;
+import backtype.storm.scheduler.Elasticity.MsgServer.MsgServer;
+import backtype.storm.scheduler.Elasticity.Strategies.IncreaseParallelism;
+import backtype.storm.scheduler.Elasticity.Strategies.ScaleInTestStrategy;
+import backtype.storm.scheduler.Elasticity.Strategies.StellaInStrategy;
+import backtype.storm.scheduler.Elasticity.Strategies.StellaOutStrategy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import backtype.storm.scheduler.Cluster;
-import backtype.storm.scheduler.ExecutorDetails;
-import backtype.storm.scheduler.IScheduler;
-import backtype.storm.scheduler.SchedulerAssignment;
-import backtype.storm.scheduler.Topologies;
-import backtype.storm.scheduler.EvenScheduler;
-import backtype.storm.scheduler.TopologyDetails;
-import backtype.storm.scheduler.WorkerSlot;
-import backtype.storm.scheduler.Elasticity.GetStats.ComponentStats;
-import backtype.storm.scheduler.Elasticity.MsgServer.MsgServer;
-import backtype.storm.scheduler.Elasticity.Strategies.*;
 
 public class ElasticityScheduler implements IScheduler {
 	private static final Logger LOG = LoggerFactory
