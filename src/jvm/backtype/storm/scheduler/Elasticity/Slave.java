@@ -28,7 +28,7 @@ public class Slave {
 		t.start();
 		while(true){
 			Thread.sleep(1000);
-			SlaveWorker worker = new SlaveWorker();
+			SlaveWorker worker = new SlaveWorker(args[0]);
 			worker.run();
 		}
 	}
@@ -36,6 +36,8 @@ public class Slave {
 }
 
 class SlaveWorker implements Runnable{
+
+	private String masterIp;
 
 	@Override
 	public void run() {
@@ -46,7 +48,7 @@ class SlaveWorker implements Runnable{
 			
 			//prf.examine();
 			//send service info
-            Socket socket = new Socket("10.71.104.210",6789);
+            Socket socket = new Socket(this.masterIp,6789);
 			ObjectOutputStream out=new ObjectOutputStream(socket.getOutputStream());
 			out.flush();
 			out.writeObject(Slave.prf.hostname);
@@ -62,6 +64,10 @@ class SlaveWorker implements Runnable{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public SlaveWorker(String ip) {
+		this.masterIp = ip;
 	}
 	
 }
