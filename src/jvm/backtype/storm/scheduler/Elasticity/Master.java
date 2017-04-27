@@ -20,6 +20,7 @@ public class Master {
 			.getLogger(Master.class);
 	public static HashMap<String, Profile> profile_map;
 	private static Master instance;
+
 	
 	private Master(){
 		profile_map = new HashMap<String, Profile>();

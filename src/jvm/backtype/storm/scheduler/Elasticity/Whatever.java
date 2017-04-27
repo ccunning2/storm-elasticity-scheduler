@@ -107,12 +107,15 @@ public class Whatever {
         Profile profile = master.profile_map.get(node.hostname);
         if (profile != null) {
             double cpu = profile.getCpu_usage();
-            this.stats.nodeStats.get(node.hostname).cpu = cpu;
+            if (this.stats.nodeStats.get(node.hostname).cpu != null) {
+                this.stats.nodeStats.get(node.hostname).cpu = cpu;
+                double ratio = this.stats.nodeStats.get(node.hostname).transfer_throughput / cpu;
+                // calculate cpu per tuple (should be using transfer_input)
+                this.stats.nodeStats.get(node.hostname).tuplePerCpu = ratio;
+                LOG.info("Node ratio is {}", ratio);
+            }
 
-            double ratio = this.stats.nodeStats.get(node.hostname).transfer_throughput / cpu;
-            // calculate cpu per tuple (should be using transfer_input)
-            this.stats.nodeStats.get(node.hostname).tuplePerCpu = ratio;
-            LOG.info("Node ratio is {}", ratio);
+
         }
     }
 }
