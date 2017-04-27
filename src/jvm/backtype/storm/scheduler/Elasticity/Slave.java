@@ -19,16 +19,18 @@ public class Slave {
 
 
 
-		prf=new Profile(localMachine.getHostName());
+		prf=new Profile(localMachine.getCanonicalHostName());
        
 		Thread t=new Thread(new ProfileUpdate());
-        System.out.println("Starting profile update thread");
-		t.start();
-		while(true){
-			Thread.sleep(1000);
-			SlaveWorker worker = new SlaveWorker();
-			worker.run();
-		}
+		System.out.println("Machine canonical host name is: " + localMachine.getCanonicalHostName());
+		System.out.println("Machine hostName (same as profile constructor) is: " + localMachine.getHostName());
+		System.out.println("Starting profile update thread");
+//		t.start();
+//		while(true){
+//			Thread.sleep(1000);
+//			SlaveWorker worker = new SlaveWorker();
+//			worker.run();
+//		}
 	}
 
 }
@@ -47,7 +49,7 @@ class SlaveWorker implements Runnable{
             Socket socket = new Socket("10.71.104.210",6789);
 			ObjectOutputStream out=new ObjectOutputStream(socket.getOutputStream());
 			out.flush();
-			out.writeObject(Slave.prf.ip);
+			out.writeObject(Slave.prf.hostname);
 			out.writeObject(Slave.prf.getCpu_usage());
 			//out.writeObject(Slave.prf.getBandwidth_in());
 			//out.writeObject(Slave.prf.getBandwidth_out());

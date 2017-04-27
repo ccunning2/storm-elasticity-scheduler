@@ -111,7 +111,7 @@ class ServerWorker implements Runnable{
 			//receive profile
 			
 			Object obj=this.in.readObject();
-			String ip=obj.toString();
+			String hostname=obj.toString();
 			obj=this.in.readObject();
 			double cpu=Double.valueOf(obj.toString());
 //			obj=this.in.readObject();
@@ -120,17 +120,17 @@ class ServerWorker implements Runnable{
 //			double bandwidth_out=Double.valueOf(obj.toString());
 			this.out.flush();
 
-			Profile prf=new Profile(ip);
+			Profile prf=new Profile(hostname);
 //			prf.setBandwidth_in(bandwidth_in);
 //			prf.setBandwidth_out(bandwidth_out);
 			prf.setCpu_usage(cpu);
 			
-			Master.profile_map.put(prf.ip, prf);
+			Master.profile_map.put(prf.hostname, prf);
 			//print out information
-			LOG.info("host IP address: "+prf.ip);
+			LOG.info("host name: "+prf.hostname);
 //			System.out.println(prf.ip+"-Bandwidth_in: "+prf.getBandwidth_in());
 //			System.out.println(prf.ip+"-Bandwidth_out: "+prf.getBandwidth_out());
-			LOG.info(prf.ip+"-cpu_usage: "+prf.getCpu_usage());
+			LOG.info(prf.hostname+"-cpu_usage: "+prf.getCpu_usage());
 			
 			
 //			Master.profile_map.put(prf.ip, prf);
