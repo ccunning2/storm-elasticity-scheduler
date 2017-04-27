@@ -25,12 +25,12 @@ public class Slave {
 		System.out.println("Machine canonical host name is: " + localMachine.getCanonicalHostName());
 		System.out.println("Machine hostName (same as profile constructor) is: " + localMachine.getHostName());
 		System.out.println("Starting profile update thread");
-//		t.start();
-//		while(true){
-//			Thread.sleep(1000);
-//			SlaveWorker worker = new SlaveWorker();
-//			worker.run();
-//		}
+		t.start();
+		while(true){
+			Thread.sleep(1000);
+			SlaveWorker worker = new SlaveWorker();
+			worker.run();
+		}
 	}
 
 }
