@@ -215,11 +215,14 @@ public class GetStats {
 	private void UpdateCpuHistory() {
 		Master master = Master.getInstance();
 		for (HashMap.Entry<String, Profile> entry : master.profile_map.entrySet()) {
-		List<Profile> profiles = this.cpuHistory.get(entry.getKey());
-			if(profiles.size() >= MOVING_AVG_WINDOW){
-				profiles.remove(0);
-			}	
-			profiles.add(entry.getValue());
+			LOG.info("Working with entry {}", entry.getKey());
+			List<Profile> profiles = this.cpuHistory.get(entry.getKey());
+			if (profiles != null) {
+				if (profiles.size() >= MOVING_AVG_WINDOW) {
+					profiles.remove(0);
+				}
+				profiles.add(entry.getValue());
+			}
 		}
 	}
 
