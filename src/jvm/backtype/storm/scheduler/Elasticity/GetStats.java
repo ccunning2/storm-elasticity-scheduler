@@ -218,12 +218,16 @@ public class GetStats {
 			LOG.info("Working with entry {}", entry.getKey());
 			List<Profile> profiles = this.cpuHistory.get(entry.getKey());
 			LOG.info("Profile List {}", profiles);
-			if (profiles != null) {
-				if (profiles.size() >= MOVING_AVG_WINDOW) {
-					profiles.remove(0);
-				}
-				profiles.add(entry.getValue());
+			if (profiles == null) {
+				profiles = new ArrayList<Profile>();
 			}
+            if (profiles.size() >= MOVING_AVG_WINDOW) {
+                profiles.remove(0);
+            }
+
+            profiles.add(entry.getValue());
+			this.cpuHistory.put(entry.getKey(), profiles);
+			LOG.info("Added {} to profiles", entry.getValue());
 		}
 	}
 
