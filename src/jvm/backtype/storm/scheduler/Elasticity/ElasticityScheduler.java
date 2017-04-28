@@ -67,6 +67,7 @@ public class ElasticityScheduler implements IScheduler {
 
 			MsgServer.Signal signal = MsgServer.Signal.ScaleOut;        //msgServer.getMessage();
 			if(signal == MsgServer.Signal.ScaleOut || (globalState.rebalancingState == MsgServer.Signal.ScaleOut && status.equals("REBALANCING"))){
+				LOG.info("SCALEOUT");
 				this.scaleOut(msgServer, topo, topologies, globalState, stats, cluster);
 				globalState.rebalancingState = MsgServer.Signal.ScaleOut;
 			} else if (signal == MsgServer.Signal.ScaleIn) {
