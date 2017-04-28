@@ -217,6 +217,7 @@ public class GetStats {
 		for (HashMap.Entry<String, Profile> entry : master.profile_map.entrySet()) {
 			LOG.info("Working with entry {}", entry.getKey());
 			List<Profile> profiles = this.cpuHistory.get(entry.getKey());
+			LOG.info("Profile List {}", profiles);
 			if (profiles != null) {
 				if (profiles.size() >= MOVING_AVG_WINDOW) {
 					profiles.remove(0);
