@@ -85,11 +85,8 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 LOG.info("Cpu history entry for {} is null", host.getKey());
                 LOG.info("Cpu history map: {}", this._getStats.cpuHistory);
             } else {
-                if (this._getStats.cpuHistory.get(host.getKey()) == null) {
-                    LOG.info("Host CPU History is Null : {}", host.getKey());
-                    continue;
-                }
-                for (Profile prof : this._getStats.cpuHistory.get(host.getKey())) {
+
+                for (Profile prof : this._getStats.cpuHistory.get(hostname)) {
                     if (prof != null) {
                         avg = prof.getCpu_usage();
                         LOG.info("Profile not null, avg: {}", avg);
