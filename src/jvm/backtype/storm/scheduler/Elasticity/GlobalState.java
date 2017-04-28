@@ -103,7 +103,6 @@ public class GlobalState {
 				}
 
 				sched_state.put(topo.getId(), topoSched);
-
 			}
 
 		}

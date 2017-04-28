@@ -15,6 +15,8 @@ import org.apache.thrift.transport.TSocket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
+
 import backtype.storm.generated.BoltStats;
 import backtype.storm.generated.ClusterSummary;
 import backtype.storm.generated.ExecutorSpecificStats;
@@ -120,6 +122,11 @@ public class GetStats {
 	public HashMap<String, NodeStats> nodeStats;
 
 	/**
+	 * nodename -> profile
+	 */
+	public HashMap<String, List<Profile>> cpuHistory;
+
+	/**
 	 * Topology_id->(Component_Id->List of previous throughputs)
 	 */
 	public HashMap<String, HashMap<String, ComponentStats>> componentStats;
@@ -165,6 +172,7 @@ public class GetStats {
 		this.emitThroughputHistory = new HashMap<String, HashMap<String, List<Integer>>>();
 		this.transferThroughputHistory = new HashMap<String, HashMap<String, List<Integer>>>();
 		this.executeThroughputHistory = new HashMap<String, HashMap<String, List<Integer>>>();
+		this.cpuHistory = new HashMap<String, List<Profile>>();
 		this.startTimes = new HashMap<String, Long>();
 		this.nodeStats = new HashMap<String, NodeStats>();
 		this.componentStats = new HashMap<String, HashMap<String, ComponentStats>>();
@@ -201,6 +209,20 @@ public class GetStats {
 		return instance;
 	}
 
+	/* 
+	* Keep a cpu usage history
+	*/
+	private void UpdateCpuHistory() {
+		Master master = Master.getInstance();
+		for (HashMap.Entry<String, Profile> entry : master.profile_map.entrySet()) {
+		List<Profile> profiles = this.cpuHistory.get(entry.getKey());
+			if(profiles.size() >= MOVING_AVG_WINDOW){
+				profiles.remove(0);
+			}	
+			profiles.add(entry.getValue());
+		}
+	}
+
 	public void getStatistics() {
 		LOG.info("Getting stats...");
 
@@ -215,6 +237,11 @@ public class GetStats {
 
 		try {
 			tTransport.open();
+
+			/* keep cpu history */
+			this.UpdateCpuHistory();
+			LOG.info("CPU History size : {}", this.cpuHistory.size());
+
 			ClusterSummary clusterSummary = client.getClusterInfo();
 			List<TopologySummary> topologies = clusterSummary.get_topologies();
 			for (TopologySummary topo : topologies) {
@@ -410,6 +437,7 @@ public class GetStats {
 					this.logComponentStats(topo);
 				}
 
+
 				
 			}
 		} catch (TException e) {
@@ -446,6 +474,7 @@ public class GetStats {
 			compExecuteHistory.get(entry.getKey()).add(
 					entry.getValue().total_execute_throughput);
 		}
+
 	}
 
 	private String getTaskHashId(String host, String port, String componentId,

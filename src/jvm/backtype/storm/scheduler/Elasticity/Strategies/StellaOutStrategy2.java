@@ -1,19 +1,12 @@
 package backtype.storm.scheduler.Elasticity.Strategies;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 import backtype.storm.scheduler.Cluster;
+import backtype.storm.scheduler.Elasticity.*;
 import backtype.storm.scheduler.Topologies;
 import backtype.storm.scheduler.TopologyDetails;
-import backtype.storm.scheduler.Elasticity.Component;
-import backtype.storm.scheduler.Elasticity.GetStats;
-import backtype.storm.scheduler.Elasticity.GlobalState;
-import backtype.storm.scheduler.Elasticity.HelperFuncs;
+import backtype.storm.scheduler.ExecutorDetails;
 import backtype.storm.scheduler.Elasticity.Strategies.TopologyHeuristicStrategy.ComponentComparator;
 
 /***
@@ -22,12 +15,27 @@ import backtype.storm.scheduler.Elasticity.Strategies.TopologyHeuristicStrategy.
  */
 public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
+    HashMap<String, Double> perExecRate = new HashMap<String, Double>();
+    HashMap<String, Double> perCpuRate = new HashMap<String, Double>();
+    HashMap<String, Double> throughputToExecuteRatio = new HashMap<String, Double>();
+
     HashMap<String, Double> ExpectedEmitRateMap = new HashMap<String, Double>();
+    HashMap<String, Double> TempExpectedEmitRateMap = new HashMap<String, Double>();
+
     HashMap<String, Double> ExpectedExecuteRateMap = new HashMap<String, Double>();
+    HashMap<String, Double> TempExpectedExecuteRateMap = new HashMap<String, Double>();
+
     HashMap<String, Double> EmitRateMap = new HashMap<String, Double>();
     HashMap<String, Double> ExecuteRateMap = new HashMap<String, Double>();
     HashMap<String, Integer> ParallelismMap = new HashMap<String, Integer>();
-    ArrayList<Component> sourceList=new ArrayList<Component>();
+
+    HashMap<String, Double> CpuMap = new HashMap<String, Double>();
+    HashMap<String, Double> ExpectedCpuMap = new HashMap<String, Double>();
+    HashMap<String, Double> TempExpectedCpuMap = new HashMap<String, Double>();
+
+    HashMap<ExecutorDetails, Node> ExecToNodeMap = new HashMap<ExecutorDetails, Node>();
+    ArrayList<Component> sourceList = new ArrayList<Component>();
+    int THRESHOLD_CPU = 90;
     int sourceCount;
 
     int count;
@@ -48,15 +56,36 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         HashMap<Component, Integer> rankMap = new HashMap<Component, Integer>();
         ComponentComparator bvc =  new ComponentComparator(rankMap);
         TreeMap<Component, Integer> IORankMap = new TreeMap<Component, Integer>(bvc);
-        for(Map.Entry<Component,Integer> e:arr.entrySet() ){
+        for(Map.Entry<Component,Integer> e:arr.entrySet()) {
             rankMap.put(e.getKey(), 1);
         }
         IORankMap.putAll(rankMap);
         return IORankMap;
     }
 
-    private void getCpuMap() {
-        LOG.info("In GetCpuMap function\n");
+    private void GetExecToNodeMap() {
+        HashMap<ExecutorDetails, Node> execToNode = new HashMap<ExecutorDetails, Node>();
+
+        for(Map.Entry<String, Node> node : this._globalState.nodes.entrySet()) {
+            for (ExecutorDetails exec : node.getValue().execs) {
+                this.ExecToNodeMap.put(exec, node.getValue());
+            }
+        }
+    }
+
+    private void GetCpuMap() {
+        LOG.info("Enter()");
+
+        double avg = 0;
+        for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
+            avg = 1;
+            for(Profile prof : this._getStats.cpuHistory.get(host.getKey())) {
+                avg = prof.getCpu_usage();
+            }
+
+            if(avg == 0) avg = 1;
+            this.CpuMap.put(host.getKey(), avg);
+        }
     }
 
 
@@ -71,7 +100,6 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 				LOG.info("Emit History: ", k.getValue());
 				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
                 this.EmitRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
-
             }
         }
         LOG.info("Emit Rate: {}", EmitRateMap);
@@ -112,8 +140,30 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             }
         }
 
+        // HashMap<String, Integer> perExecRate = new HashMap<String, Integer>();
+        // HashMap<String, Integer> perCpuRate = new HashMap<String, Integer>();
+        // HashMap<String, Double> throughputToExecuteRatio;
+        this.perExecRate = new HashMap<String, Double>();
+        for(HashMap.Entry<String, Double> entry : this.ExecuteRateMap.entrySet()) {
+            this.perExecRate.put(entry.getKey(), entry.getValue()/this.ParallelismMap.get(entry.getKey()));
+        }
+
+        // right now it is doing emit. Should be doing Transfer?
+        this.throughputToExecuteRatio = new HashMap<String, Double>();
+        for(HashMap.Entry<String, Double> entry : this.EmitRateMap.entrySet()) {
+            this.perExecRate.put(entry.getKey(), entry.getValue()/this.ExecuteRateMap.get(entry.getKey()));
+        }
+
         // cc: place holder
-        this.getCpuMap();
+        this.GetCpuMap();
+
+        // get tuple per cpu
+        this.perCpuRate = new HashMap<String, Double>();
+        for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
+            this.perCpuRate.put(host.getKey(), this.ExecuteRateMap.get(host.getKey())/this.CpuMap.get(host.getKey()));
+        }
+
+        this.GetExecToNodeMap();
 
         this.sourceCount=0;
 
@@ -155,13 +205,67 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         }
     }
 
-    private boolean isComponentCongested() {
+    private boolean IsComponentCongested(Component comp) {
         LOG.info("In isComponentCongested");
-        return false;
+
+        boolean ret = true;
+        for (ExecutorDetails exec : comp.execs) {
+            Node node = this.ExecToNodeMap.get(exec);
+            if(this.CpuMap.get(node.hostname) < THRESHOLD_CPU) {
+                ret = false;
+                break;
+            }
+        }
+        
+        return ret;
     }
 
-    private boolean getExpectedImprovement() {
+    private boolean getExpectedImprovement(Component head) {
         LOG.info("In getExpectedImprovmeent");
+
+        // adjust head
+        /*double expectedThroughputIncrease = this.perExecRate.get(head.id) * this.throughputToExecuteRatio.get(c.id);
+        double executeIncrease = this.TempExpectedExecuteRateMap.get(head.id) + this.perExecRate.get(head.id);
+        this.TempExpectedExecuteRateMap.put(head.id, executeIncrease);
+        double emitIncrease = this.TempExpectedExecuteRateMap.get(head.id) * this.throughputToExecuteRatio.get(head.id);
+        this.TempExpectedEmitRateMap.put(head.id, emitIncrease);
+        */
+
+        double expectedThroughputIncrease = this.perExecRate.get(head.id) * this.throughputToExecuteRatio.get(c.id);
+        this.TempExpectedEmitRateMap.put(head.id, expectedThroughputIncrease);
+
+        // push all children
+        LinkedList<Component> queue = new LinkedList<Component>();
+        for (String child : head.children) {
+            queue.push(this._globalState.components.get(this._topo.getId()).get(i.getKey()));
+        }
+
+        /* first get some component stats */
+        while (queue.size() != 0) {
+            Component c = queue.pop();
+            // get parent increase assuming equal distribution among children
+            double parent_increase = 0;
+            for (String p : c.parents) {
+                Component parent = this._globalState.components.get(this._topo.getId()).get(p);
+                parent_increase += this.TempExpectedEmitRateMap.get(parent.id) / parent.children.size();
+            }
+
+            // calculate component increase
+            double cpu_increaase = parent_increase/this.perCpuRate.get(c.id);
+            if(cpu_increaase + this.CpuMap.get(c.id) > THRESHOLD_CPU) {
+                cpu_increaase = THRESHOLD_CPU - this.CpuMap.get(c.id);
+                parent_increase = cpu_increaase * this.perCpuRate.get(c.id);
+            }
+
+            this.TempExpectedExecuteRateMap.put(c.id, parent_increase);
+            this.TempExpectedEmitRateMap.put(c.id, parent_increase*this.throughputToExecuteRatio.get(c.id));
+
+
+        }
+
+
+
+
         return false;
     }
 
@@ -187,7 +291,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                     }
                 }
 
-                this.isComponentCongested();
+                this.IsComponentCongested(self);
                 if(in>1.2*out){
                     Double io=in-out;
                     IOMap.put(i.getKey(), io);
