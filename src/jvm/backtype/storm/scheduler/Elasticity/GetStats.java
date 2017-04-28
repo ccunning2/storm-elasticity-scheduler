@@ -226,7 +226,7 @@ public class GetStats {
             }
 
             profiles.add(entry.getValue());
-			this.cpuHistory.put(entry.getKey(), profiles);
+			this.cpuHistory.put(entry.getValue().hostname, profiles);
 			LOG.info("Added {} to profiles", entry.getValue());
 		}
 	}
