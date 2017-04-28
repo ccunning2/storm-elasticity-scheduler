@@ -56,8 +56,8 @@ public class ElasticityScheduler implements IScheduler {
 		 */
 		Master server = Master.getInstance();
 		//server.printStats();
-		Whatever what = new Whatever();
-		what.getSchedule();
+//		Whatever what = new Whatever();
+//		what.getSchedule();
 
 		/**
 		 * Start Scheduling
