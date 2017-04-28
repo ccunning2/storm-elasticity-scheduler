@@ -79,15 +79,20 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         double avg = 0;
         for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
             avg = 1;
-            for(Profile prof : this._getStats.cpuHistory.get(host.getKey())) {
-                if (prof != null) {
-                    avg = prof.getCpu_usage();
-                    LOG.info("Profile not null, avg: {}", avg);
+            if (this._getStats.cpuHistory.get(host.getKey()) == null) {
+                LOG.info("Cpu history entry for {} is null", host.getKey());
+            } else {
+                for (Profile prof : this._getStats.cpuHistory.get(host.getKey())) {
+                    if (prof != null) {
+                        avg = prof.getCpu_usage();
+                        LOG.info("Profile not null, avg: {}", avg);
+                    }
                 }
-            }
 
-            if(avg == 0) avg = 1;
-            this.CpuMap.put(host.getKey(), avg);
+
+            }
+             if (avg == 0) avg = 1;
+                this.CpuMap.put(host.getKey(), avg);
         }
     }
 
