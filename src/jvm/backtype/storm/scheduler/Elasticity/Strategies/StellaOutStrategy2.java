@@ -378,6 +378,8 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 }
             }
         }
+
+        ret=new HashMap<Component, Integer>();
         LOG.info("List of components that need to be parallelized:{}",ret);
         return ret;
     }
