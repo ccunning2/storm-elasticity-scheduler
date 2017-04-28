@@ -79,7 +79,8 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         double avg = 0;
         for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
             avg = 1;
-            if (this._getStats.cpuHistory.get(host.getKey()) == null) {
+            String hostname = host.getValue().hostname;
+            if (this._getStats.cpuHistory.get(hostname) == null) {
                 LOG.info("Cpu history entry for {} is null", host.getKey());
             } else {
                 for (Profile prof : this._getStats.cpuHistory.get(host.getKey())) {
