@@ -124,11 +124,11 @@ public class ElasticityScheduler implements IScheduler {
 	
 	public void scaleOut(MsgServer msgServer, TopologyDetails topo, Topologies topologies, GlobalState globalState, GetStats stats, Cluster cluster) {
 		String status = HelperFuncs.getStatus(topo.getId());
-		if (msgServer.isRebalance() == true) {
-			if (globalState.stateEmpty() == false) {
-				List<Node> newNodes = globalState.getNewNode();
+		if (true) { //(msgServer.isRebalance() == true) { TODO Uncomment/FIX
+			if (true) { //(globalState.stateEmpty() == false) {
+				 //List<Node> newNodes = globalState.getNewNode();
 				
-				if (newNodes.size() > 0) {
+				if (true) { //(newNodes.size() > 0) {
 
 					LOG.info("Increasing parallelism...");
 					StellaOutStrategy2 strategy = new StellaOutStrategy2(globalState, stats, topo, cluster, topologies);
