@@ -64,21 +64,21 @@ class ServerThread implements Runnable{
 	private static final Logger LOG = LoggerFactory
 			.getLogger(Master.class);
 	@Override
-	public void run() {
-		// TODO Auto-generated method stub
-		LOG.info("***In ServerThread run()***");
-		int port = 6789;
-		ServerSocket socket;
-		try {
-			socket = new ServerSocket(port, 10);
-			Socket connection;
-			while(true){
-				connection=socket.accept();
-				ServerWorker worker=new ServerWorker(connection);
-				worker.run();			
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			public void run() {
+				// TODO Auto-generated method stub
+				LOG.info("***In ServerThread run()***");
+				int port = 6789;
+				ServerSocket socket;
+				try {
+					socket = new ServerSocket(port, 10);
+					Socket connection;
+					while(true){
+						connection=socket.accept();
+						ServerWorker worker=new ServerWorker(connection);
+						worker.run();
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
