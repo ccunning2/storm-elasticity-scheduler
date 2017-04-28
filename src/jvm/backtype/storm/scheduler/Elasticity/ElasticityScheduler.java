@@ -2,10 +2,7 @@ package backtype.storm.scheduler.Elasticity;
 
 import backtype.storm.scheduler.*;
 import backtype.storm.scheduler.Elasticity.MsgServer.MsgServer;
-import backtype.storm.scheduler.Elasticity.Strategies.IncreaseParallelism;
-import backtype.storm.scheduler.Elasticity.Strategies.ScaleInTestStrategy;
-import backtype.storm.scheduler.Elasticity.Strategies.StellaInStrategy;
-import backtype.storm.scheduler.Elasticity.Strategies.StellaOutStrategy;
+import backtype.storm.scheduler.Elasticity.Strategies.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,7 +130,7 @@ public class ElasticityScheduler implements IScheduler {
 				if (newNodes.size() > 0) {
 
 					LOG.info("Increasing parallelism...");
-					StellaOutStrategy strategy = new StellaOutStrategy(globalState, stats, topo, cluster, topologies);
+					StellaOutStrategy2 strategy = new StellaOutStrategy2(globalState, stats, topo, cluster, topologies);
 					HashMap<Component, Integer> compMap = strategy.StellaStrategy(new HashMap<String, Component>());
 					
 					HelperFuncs.changeParallelism2(compMap, topo);
