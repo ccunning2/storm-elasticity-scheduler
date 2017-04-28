@@ -121,7 +121,12 @@ class ServerWorker implements Runnable{
 //			double bandwidth_out=Double.valueOf(obj.toString());
 			this.out.flush();
 
-			Profile prf=new Profile(hostname);
+			Profile prf = null;
+			if (Master.profile_map.get(hostname) == null) {
+				prf = new Profile(hostname);
+			} else {
+				prf = Master.profile_map.get(hostname);
+			}
 //			prf.setBandwidth_in(bandwidth_in);
 //			prf.setBandwidth_out(bandwidth_out);
 			prf.setCpu_usage(cpu);

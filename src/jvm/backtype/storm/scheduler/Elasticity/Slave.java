@@ -27,7 +27,7 @@ public class Slave {
 		System.out.println("Starting profile update thread");
 		t.start();
 		while(true){
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 			SlaveWorker worker = new SlaveWorker(args[0]);
 			worker.run();
 		}
