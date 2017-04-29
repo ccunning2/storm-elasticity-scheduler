@@ -126,6 +126,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 				LOG.info("Execute History: ", k.getValue());
 				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
                 this.ExecuteRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
+                LOG.info("77- ExectureRateMap Key is {}", k.getKey());
             }
         }
         LOG.info("Execute Rate: {}", ExecuteRateMap);
@@ -169,13 +170,15 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // cc: place holder
         this.GetCpuMap();
 
-//        // get tuple per cpu
-//        this.perCpuRate = new HashMap<String, Double>();
-//        for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
-//            this.perCpuRate.put(host.getKey(), this.ExecuteRateMap.get(host.getKey())/this.CpuMap.get(host.getKey()));
-//        }
-//
-//        this.GetExecToNodeMap();
+        // get tuple per cpu
+        this.perCpuRate = new HashMap<String, Double>();
+        for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
+            LOG.info("77- Key in globalstate.nodes {}, Value in globalstate.nodes {}", host.getKey(), host.getValue());
+            //host.getValue().
+            //this.perCpuRate.put(host.getKey(), this.ExecuteRateMap.get(host.getKey())/this.CpuMap.get(host.getValue().hostname));
+        }
+
+        //this.GetExecToNodeMap();
 
         this.sourceCount=0;
 
