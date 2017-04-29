@@ -268,38 +268,49 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         LOG.info("Current Rate : {}, Throughput : {}",
                 this.ExecuteRateMap.get(head.id) ,this.EmitRateMap.get(head.id));
 
-//        // push all children
-//        LinkedList<Component> queue = new LinkedList<Component>();
-//        for (String child : head.children) {
-//            queue.push(this._globalState.components.get(this._topo.getId()).get(i.getKey()));
-//        }
-//
-//        /* first get some component stats */
-//        while (queue.size() != 0) {
-//            Component c = queue.pop();
-//            // get parent increase assuming equal distribution among children
-//            double parent_increase = 0;
-//            for (String p : c.parents) {
-//                Component parent = this._globalState.components.get(this._topo.getId()).get(p);
-//                parent_increase += this.TempExpectedEmitRateMap.get(parent.id) / parent.children.size();
-//            }
-//
-//            // calculate component increase
-//            double cpu_increaase = parent_increase/this.perCpuRate.get(c.id);
-//            if(cpu_increaase + this.CpuMap.get(c.id) > THRESHOLD_CPU) {
-//                cpu_increaase = THRESHOLD_CPU - this.CpuMap.get(c.id);
-//                parent_increase = cpu_increaase * this.perCpuRate.get(c.id);
-//            }
-//
-//            this.TempExpectedExecuteRateMap.put(c.id, parent_increase);
-//            this.TempExpectedEmitRateMap.put(c.id, parent_increase*this.throughputToExecuteRatio.get(c.id));
-//
-//
-//        }
-//
-//
-//
-//
+        // push all children
+        LinkedList<Component> queue = new LinkedList<Component>();
+        if(head.children.size() != 0)
+        for (String child : head.children) {
+            Map<String, Component> compMap = this._globalState.components.get(this._topo.getId());
+            LOG.info("Adding Child : {}", compMap.get(child));
+            queue.add(compMap.get(child));
+        }
+
+        /* first get some component stats */
+        while (queue.size() != 0) {
+            Component c = queue.remove();
+            LOG.info("Component : {}", c.id);
+
+            // get parent increase assuming equal distribution among children
+            double parent_increase = 0;
+            for (String p : c.parents) {
+                Component parent = this._globalState.components.get(this._topo.getId()).get(p);
+                parent_increase += this.TempExpectedEmitRateMap.get(parent.id) / parent.children.size();
+            }
+            LOG.info("Expected Parent Increase : {}", parent_increase);
+
+            // calculate component increase
+            double cpu_increase = parent_increase/this.perCpuRate.get(c.id);
+            LOG.info("Expected Cpu Increase : {}", cpu_increase);
+            if(cpu_increase + this.CpuMap.get(c.id) > THRESHOLD_CPU) {
+                cpu_increase = THRESHOLD_CPU - this.CpuMap.get(c.id);
+                parent_increase = cpu_increase * this.perCpuRate.get(c.id);
+            }
+            LOG.info("New Expected Cpu Increase : {}, throughput increase : {}",
+                    cpu_increase, parent_increase * this.throughputToExecuteRatio.get(c.id));
+
+            this.TempExpectedExecuteRateMap.put(c.id, parent_increase);
+            this.TempExpectedEmitRateMap.put(c.id, parent_increase * this.throughputToExecuteRatio.get(c.id));
+
+            if(c.children.size() != 0)
+                for (String child : c.children) {
+                    Map<String, Component> compMap = this._globalState.components.get(this._topo.getId());
+                    LOG.info("Adding Child : {}", compMap.get(child));
+                    queue.add(compMap.get(child));
+                }
+        }
+
         return false;
     }
 
