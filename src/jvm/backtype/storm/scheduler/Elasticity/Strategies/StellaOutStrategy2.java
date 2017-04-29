@@ -305,7 +305,9 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 LOG.info("cpu for node : {} increase : {}", node.hostname, cpu_increase);
             }
 
-            parent_increase = new_parent_increase;
+            if(new_parent_increase != 0)
+                parent_increase = new_parent_increase;
+
             LOG.info("throughput increase : {}",
                     parent_increase * this.throughputToExecuteRatio.get(c.id));
 
