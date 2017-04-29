@@ -67,7 +67,9 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         HashMap<ExecutorDetails, Node> execToNode = new HashMap<ExecutorDetails, Node>();
 
         for(Map.Entry<String, Node> node : this._globalState.nodes.entrySet()) {
+            LOG.info("Node: {}", node);
             for (ExecutorDetails exec : node.getValue().execs) {
+                LOG.info("ExecutorDetails: {}", exec);
                 this.ExecToNodeMap.put(exec, node.getValue());
             }
         }
