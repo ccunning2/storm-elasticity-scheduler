@@ -242,7 +242,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 break;
             }
         }
-        
+        LOG.info("Component Congested {}", ret);
         return ret;
     }
 
@@ -317,7 +317,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                     }
                 }
 
-//                this.IsComponentCongested(self);
+                this.IsComponentCongested(self);
                 if(in>1.2*out){
                     Double io=in-out;
                     IOMap.put(i.getKey(), io);
