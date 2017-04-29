@@ -78,7 +78,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
         double avg = 0;
         for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
-            avg = 1;
+            avg = 0.1;
             String hostname = host.getValue().hostname;
             LOG.info("Checking hostname: {}", hostname);
             if (this._getStats.cpuHistory.get(hostname) == null) {
@@ -95,8 +95,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
 
             }
-             if (avg == 0) avg = 1;
-                this.CpuMap.put(host.getKey(), avg);
+
+            if (avg == 0) avg = 0.1;
+            this.CpuMap.put(host.getKey(), avg);
+            LOG.info("Cpu Host Map size: {}", this.CpuMap.size());
         }
     }
 
@@ -176,7 +178,8 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
             LOG.info("77- Key in globalstate.nodes {}, Node ID: {}", host.getKey(), host.getValue().supervisor_id);
             LOG.info("NodeStats {}", this._getStats.nodeStats);
-            this.perCpuRate.put(host.getKey(), this._getStats.nodeStats.get(host.getValue().supervisor_id).emit_throughput / this.CpuMap.get(host.getValue().hostname));
+            LOG.info("hostname {}", host.getValue().hostname);
+            this.perCpuRate.put(host.getValue().hostname, this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput / this.CpuMap.get(host.getValue().hostname));
         }
 
         //this.GetExecToNodeMap();
