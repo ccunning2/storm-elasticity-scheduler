@@ -449,6 +449,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         int increase = 0;
 
         for (HashMap.Entry<String, Double> compStr : sinkmap.entrySet()) {
+            LOG.info("Sink Node: {}", compStr.getKey());
             increase += TempExpectedEmitRateMap.get(compStr.getKey());
         }
 
