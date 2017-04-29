@@ -261,8 +261,12 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 //
         double expectedThroughputIncrease = this.perExecRate.get(head.id) * this.throughputToExecuteRatio.get(head.id);
         this.TempExpectedEmitRateMap.put(head.id, expectedThroughputIncrease);
+
+        LOG.info("Component Id: {}", head.id);
         LOG.info("executeToThroughputRatio : {}, TempExpectedEmitIncrease : {}",
                 this.throughputToExecuteRatio.get(head.id), expectedThroughputIncrease);
+        LOG.info("Current Rate : {}, Throughput : {}",
+                this.ExecuteRateMap.get(head.id) ,this.EmitRateMap.get(head.id));
 
 //        // push all children
 //        LinkedList<Component> queue = new LinkedList<Component>();
