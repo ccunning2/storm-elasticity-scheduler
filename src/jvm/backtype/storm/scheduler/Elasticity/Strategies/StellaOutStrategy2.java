@@ -169,7 +169,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // right now it is doing emit. Should be doing Transfer?
         this.throughputToExecuteRatio = new HashMap<String, Double>();
         for(HashMap.Entry<String, Double> entry : this.EmitRateMap.entrySet()) {
-            this.perExecRate.put(entry.getKey(), entry.getValue()/this.ExecuteRateMap.get(entry.getKey()));
+            this.throughputToExecuteRatio.put(entry.getKey(), entry.getValue()/this.ExecuteRateMap.get(entry.getKey()));
         }
 
         // cc: place holder
@@ -249,19 +249,21 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     }
 
     private boolean getExpectedImprovement(Component head) {
-//        LOG.info("In getExpectedImprovmeent");
+        LOG.info("In getExpectedImprovmeent");
+
+        // adjust head
+        /*double expectedThroughputIncrease = this.perExecRate.get(head.id) * this.throughputToExecuteRatio.get(c.id);
+        double executeIncrease = this.TempExpectedExecuteRateMap.get(head.id) + this.perExecRate.get(head.id);
+        this.TempExpectedExecuteRateMap.put(head.id, executeIncrease);
+        double emitIncrease = this.TempExpectedExecuteRateMap.get(head.id) * this.throughputToExecuteRatio.get(head.id);
+        this.TempExpectedEmitRateMap.put(head.id, emitIncrease);
+        */
 //
-//        // adjust head
-//        /*double expectedThroughputIncrease = this.perExecRate.get(head.id) * this.throughputToExecuteRatio.get(c.id);
-//        double executeIncrease = this.TempExpectedExecuteRateMap.get(head.id) + this.perExecRate.get(head.id);
-//        this.TempExpectedExecuteRateMap.put(head.id, executeIncrease);
-//        double emitIncrease = this.TempExpectedExecuteRateMap.get(head.id) * this.throughputToExecuteRatio.get(head.id);
-//        this.TempExpectedEmitRateMap.put(head.id, emitIncrease);
-//        */
-//
-//        double expectedThroughputIncrease = this.perExecRate.get(head.id) * this.throughputToExecuteRatio.get(c.id);
-//        this.TempExpectedEmitRateMap.put(head.id, expectedThroughputIncrease);
-//
+        double expectedThroughputIncrease = this.perExecRate.get(head.id) * this.throughputToExecuteRatio.get(head.id);
+        this.TempExpectedEmitRateMap.put(head.id, expectedThroughputIncrease);
+        LOG.info("executeToThroughputRatio : {}, TempExpectedEmitIncrease : {}",
+                this.throughputToExecuteRatio.get(head.id), expectedThroughputIncrease);
+
 //        // push all children
 //        LinkedList<Component> queue = new LinkedList<Component>();
 //        for (String child : head.children) {
@@ -324,7 +326,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                     Double io=in-out;
                     IOMap.put(i.getKey(), io);
                     LOG.info("component: {} IO overflow: {}", i.getKey(), io);
-                }
+                } //TODO Get rid of
             }
             IORankMap.putAll(IOMap);
             LOG.info("overload map", IOMap);
@@ -368,7 +370,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 if(this.ParallelismMap.get(e.getKey().id)>=findTaskSize(e.getKey()))//cant exceed the threshold
                     continue;
                 Integer outpercentage=e.getValue();
-//                this.getExpectedImprovement(e.getKey());
+                this.getExpectedImprovement(e.getKey());
                 Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
                 if(improve_potential>=max){
                     top=e.getKey();
