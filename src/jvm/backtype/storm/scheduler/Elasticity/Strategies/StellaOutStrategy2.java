@@ -71,6 +71,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 this.ExecToNodeMap.put(exec, node.getValue());
             }
         }
+        LOG.info("execToNodeMap: {}", execToNode.toString());
     }
 
     private void GetCpuMap() {
@@ -187,7 +188,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         }
 
 
-        //this.GetExecToNodeMap();
+        this.GetExecToNodeMap();
 
         this.sourceCount=0;
 
