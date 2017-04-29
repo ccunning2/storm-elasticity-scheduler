@@ -182,7 +182,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             LOG.info("2 {}, ",this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput );
             LOG.info("3 {}, ", this.CpuMap.get(host.getValue().hostname));
             LOG.info("CPU Map {}", this.CpuMap);
-            this.perCpuRate.put(host.getValue().hostname, ( this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput / this.CpuMap.get(host.getValue().hostname)));
+            this.perCpuRate.put(host.getValue().hostname, ( this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput / this.CpuMap.get(host.getValue().supervisor_id)));
         }
 
         //this.GetExecToNodeMap();
