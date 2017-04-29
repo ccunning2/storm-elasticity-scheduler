@@ -291,14 +291,23 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             LOG.info("Expected Parent Increase : {}", parent_increase);
 
             // calculate component increase
-            double cpu_increase = parent_increase/this.perCpuRate.get(c.id);
-            LOG.info("Expected Cpu Increase : {}", cpu_increase);
-            if(cpu_increase + this.CpuMap.get(c.id) > THRESHOLD_CPU) {
-                cpu_increase = THRESHOLD_CPU - this.CpuMap.get(c.id);
-                parent_increase = cpu_increase * this.perCpuRate.get(c.id);
+            double new_parent_increase = 0;
+            for (ExecutorDetails executorDetails : c.execs) {
+                Node node = this.ExecToNodeMap.get(executorDetails);
+
+                double cpu_increase = parent_increase / this.perCpuRate.get(node.hostname);
+                LOG.info("Expected Cpu Increase : {}", cpu_increase);
+                if (cpu_increase + this.CpuMap.get(node.supervisor_id) > THRESHOLD_CPU) {
+                    cpu_increase = THRESHOLD_CPU - this.CpuMap.get(node.supervisor_id);
+                    new_parent_increase = cpu_increase * this.perCpuRate.get(node.hostname);
+                }
+
+                LOG.info("cpu for node : {} increase : {}", node.hostname, cpu_increase);
             }
-            LOG.info("New Expected Cpu Increase : {}, throughput increase : {}",
-                    cpu_increase, parent_increase * this.throughputToExecuteRatio.get(c.id));
+
+            parent_increase = new_parent_increase;
+            LOG.info("throughput increase : {}",
+                    parent_increase * this.throughputToExecuteRatio.get(c.id));
 
             this.TempExpectedExecuteRateMap.put(c.id, parent_increase);
             this.TempExpectedEmitRateMap.put(c.id, parent_increase * this.throughputToExecuteRatio.get(c.id));
