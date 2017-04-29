@@ -237,8 +237,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         boolean ret = true;
         for (ExecutorDetails exec : comp.execs) {
             Node node = this.ExecToNodeMap.get(exec);
-            if(this.CpuMap.get(node.supervisor_id) < THRESHOLD_CPU) {
+            double currentCPu = this.CpuMap.get(node.supervisor_id);
+            if(currentCPu < THRESHOLD_CPU) {
                 ret = false;
+                LOG.info("Node: {} Cpu: {}", node, currentCPu);
                 break;
             }
         }
