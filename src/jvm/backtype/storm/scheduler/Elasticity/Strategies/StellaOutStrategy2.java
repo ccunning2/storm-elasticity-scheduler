@@ -372,8 +372,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             Double max=0.0;
             Component top=null;
             for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
+                LOG.info("Enter For loop for EETP()");
                 if(this.ParallelismMap.get(e.getKey().id)>=findTaskSize(e.getKey()))//cant exceed the threshold
                     continue;
+                LOG.info("Enter EETP()");
                 Integer outpercentage=e.getValue();
                 this.getExpectedImprovement(e.getKey());
                 Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
