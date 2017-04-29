@@ -35,7 +35,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
     HashMap<ExecutorDetails, Node> ExecToNodeMap = new HashMap<ExecutorDetails, Node>();
     ArrayList<Component> sourceList = new ArrayList<Component>();
-    int THRESHOLD_CPU = 90;
+    double THRESHOLD_CPU = 0.9;
     int sourceCount;
 
     int count;
@@ -121,6 +121,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         this.ExecuteRateMap = new HashMap<String, Double>();
         for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.executeThroughputHistory.entrySet()) {
             LOG.info("Topology: {}", i.getKey());
+
             for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
 				/*LOG.info("Component: {}", k.getKey());
 				LOG.info("Execute History: ", k.getValue());
@@ -173,9 +174,8 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // get tuple per cpu
         this.perCpuRate = new HashMap<String, Double>();
         for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
-            LOG.info("77- Key in globalstate.nodes {}, Value in globalstate.nodes {}", host.getKey(), host.getValue());
-            //host.getValue().
-            //this.perCpuRate.put(host.getKey(), this.ExecuteRateMap.get(host.getKey())/this.CpuMap.get(host.getValue().hostname));
+            LOG.info("77- Key in globalstate.nodes {}, Value in globalstate.nodes {}", host.getKey(), this._getStats.nodeStats.get(host.getKey()).emit_throughput);
+            this.perCpuRate.put(host.getKey(), this._getStats.nodeStats.get(host.getKey()).emit_throughput / this.CpuMap.get(host.getValue().hostname));
         }
 
         //this.GetExecToNodeMap();
