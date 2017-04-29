@@ -174,7 +174,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // get tuple per cpu
         this.perCpuRate = new HashMap<String, Double>();
         for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
-            LOG.info("77- Key in globalstate.nodes {}, Value in globalstate.nodes {}", host.getKey(), this._getStats.nodeStats.get(host.getKey()).emit_throughput);
+            LOG.info("77- Key in globalstate.nodes {}, nodestats {}", host.getKey(), this._getStats.nodeStats.toString());
             this.perCpuRate.put(host.getKey(), this._getStats.nodeStats.get(host.getKey()).emit_throughput / this.CpuMap.get(host.getValue().hostname));
         }
 
