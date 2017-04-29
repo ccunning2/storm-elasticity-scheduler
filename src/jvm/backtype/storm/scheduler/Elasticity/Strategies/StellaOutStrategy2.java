@@ -176,14 +176,16 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // get tuple per cpu
         this.perCpuRate = new HashMap<String, Double>();
         for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
-            LOG.info("77- Key in globalstate.nodes {}, Node ID: {}", host.getKey(), host.getValue().supervisor_id);
-            LOG.info("NodeStats {}", this._getStats.nodeStats);
-            LOG.info("hostname {}", host.getValue().hostname);
-            LOG.info("2 {}, ",this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput );
-            LOG.info("3 {}, ", this.CpuMap.get(host.getValue().hostname));
-            LOG.info("CPU Map {}", this.CpuMap);
+//            LOG.info("77- Key in globalstate.nodes {}, Node ID: {}", host.getKey(), host.getValue().supervisor_id);
+//            LOG.info("NodeStats {}", this._getStats.nodeStats);
+//            LOG.info("hostname {}", host.getValue().hostname);
+//            LOG.info("2 {}, ",this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput );
+//            LOG.info("3 {}, ", this.CpuMap.get(host.getValue().hostname));
+//            LOG.info("CPU Map {}", this.CpuMap);
             this.perCpuRate.put(host.getValue().hostname, ( this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput / this.CpuMap.get(host.getValue().supervisor_id)));
+            LOG.info("perCpu Rate for {} : {}", host.getValue().hostname, this.perCpuRate.get(host.getValue().hostname));
         }
+
 
         //this.GetExecToNodeMap();
 
