@@ -402,6 +402,9 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 LOG.info("Enter EETP()");
                 Integer outpercentage=e.getValue();
                 this.getExpectedImprovement(e.getKey());
+                Integer increase = this.getExpectedThroughput(SinkMap);
+                LOG.info("Projected Increase : {}", increase);
+
                 Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
                 if(improve_potential>=max){
                     top=e.getKey();
@@ -440,6 +443,16 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         ret=new HashMap<Component, Integer>();
         LOG.info("List of components that need to be parallelized:{}",ret);
         return ret;
+    }
+
+    private int getExpectedThroughput(HashMap<String, Double> sinkmap) {
+        int increase = 0;
+
+        for (HashMap.Entry<String, Double> compStr : sinkmap.entrySet()) {
+            increase += TempExpectedEmitRateMap.get(compStr.getKey());
+        }
+
+        return increase;
     }
 
     private void updateExpectedRateChange() {
