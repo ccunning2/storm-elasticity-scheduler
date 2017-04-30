@@ -65,7 +65,8 @@ public class ElasticityScheduler implements IScheduler {
 			String status = HelperFuncs.getStatus(topo.getId());
 			LOG.info("status: {}", status);
 
-			MsgServer.Signal signal = MsgServer.Signal.ScaleOut;        //msgServer.getMessage();
+			//MsgServer.Signal signal = MsgServer.Signal.ScaleOut;        //msgServer.getMessage();
+            MsgServer.Signal signal = msgServer.getMessage();
 			if(signal == MsgServer.Signal.ScaleOut || (globalState.rebalancingState == MsgServer.Signal.ScaleOut && status.equals("REBALANCING"))){
 				LOG.info("SCALEOUT");
 				this.scaleOut(msgServer, topo, topologies, globalState, stats, cluster);
