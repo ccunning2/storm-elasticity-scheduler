@@ -124,6 +124,7 @@ public class ElasticityScheduler implements IScheduler {
 	
 	public void scaleOut(MsgServer msgServer, TopologyDetails topo, Topologies topologies, GlobalState globalState, GetStats stats, Cluster cluster) {
 		String status = HelperFuncs.getStatus(topo.getId());
+		LOG.info("Status: {}", status);
 		if (true) { //(msgServer.isRebalance() == true) { TODO Uncomment/FIX
 			if (true) { //(globalState.stateEmpty() == false) {
 				 //List<Node> newNodes = globalState.getNewNode();
