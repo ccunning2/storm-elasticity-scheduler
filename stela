@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
+sudo svc -d /etc/service/nimbus/
 cd /home/ubuntu/storm-elasticity-scheduler/
 git pull &&
 mvn package &&
 cp /home/ubuntu/storm-elasticity-scheduler/target/storm-elasticity-scheduler-0.10.2.jar /home/ubuntu/apache-storm-0.10.2/lib/storm-elasticity-scheduler-0.10.2.jar
 cd /home/ubuntu/apache-storm-0.10.2
-
+sudo svc -u /etc/service/nimbus/
