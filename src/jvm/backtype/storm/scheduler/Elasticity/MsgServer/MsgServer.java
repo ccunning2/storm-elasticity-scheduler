@@ -47,8 +47,10 @@ public class MsgServer {
 	
 	
 	public Signal getMessage(){
+		LOG.info("Msg q size is: {}", msgQueue.size());
 		if(this.msgQueue.isEmpty()!=true) {
 			String msg = this.msgQueue.remove();
+			LOG.info("Message is {}", msg);
 			if(msg.equals("REBALANCE") == true) {
 				return Signal.ScaleOut;
 			} else if(msg.equals("SCALEIN")) {
