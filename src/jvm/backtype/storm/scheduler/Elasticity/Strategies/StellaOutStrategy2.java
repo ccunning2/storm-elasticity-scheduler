@@ -21,9 +21,11 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
     HashMap<String, Double> ExpectedEmitRateMap = new HashMap<String, Double>();
     HashMap<String, Double> TempExpectedEmitRateMap = new HashMap<String, Double>();
+    HashMap<String, Double> BestExpectedEmitRateMap = new HashMap<String, Double>();
 
     HashMap<String, Double> ExpectedExecuteRateMap = new HashMap<String, Double>();
     HashMap<String, Double> TempExpectedExecuteRateMap = new HashMap<String, Double>();
+    HashMap<String, Double> BestExpectedExecuteRateMap = new HashMap<String, Double>();
 
     HashMap<String, Double> EmitRateMap = new HashMap<String, Double>();
     HashMap<String, Double> ExecuteRateMap = new HashMap<String, Double>();
@@ -266,7 +268,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         LOG.info("executeToThroughputRatio : {}, TempExpectedEmitIncrease : {}",
                 this.throughputToExecuteRatio.get(head.id), expectedThroughputIncrease);
         LOG.info("Current Rate : {}, Throughput : {}",
-                this.ExecuteRateMap.get(head.id) ,this.EmitRateMap.get(head.id));
+                this.ExpectedExecuteRateMap.get(head.id) ,this.ExpectedEmitRateMap.get(head.id));
 
         // push all children
         LinkedList<Component> queue = new LinkedList<Component>();
@@ -396,6 +398,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             }
             //find component with max EETP
             Double max=0.0;
+            Double increase_max = 0;
             Component top=null;
             for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
                 LOG.info("Enter For loop for EETP()");
@@ -405,9 +408,14 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 Integer outpercentage=e.getValue();
                 this.getExpectedImprovement(e.getKey());
                 Integer increase = this.getExpectedThroughput(SinkMap);
+                if(increase_max < increase) {
+                    this.BestExpectedEmitRateMap = this.TempExpectedEmitRateMap;
+                    this.BestExpectedExecuteRateMap = this.BestExpectedExecuteRateMap;
+                }
                 LOG.info("Projected Increase : {}", increase);
 
                 Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
+
                 if(improve_potential>=max){
                     top=e.getKey();
                     max=improve_potential;
@@ -423,13 +431,13 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 }
                 //update throughput map
                 //update exectue rate map
-//                this.updateExpectedRateChange();
+                this.updateExpectedRateChange();
                 int current_pllsm=this.ParallelismMap.get(top.id);
-                ExpectedExecuteRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedExecuteRateMap.get(top.id));
+                ExpectedExecuteRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedExecuteRateMap.get(top.id)); // << this will probably go away
                 //update emit rate map
-                ExpectedEmitRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedEmitRateMap.get(top.id));
+                ExpectedEmitRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedEmitRateMap.get(top.id));    // << this will probably go away
                 //update parallelism map
-                this.ParallelismMap.put(top.id, current_pllsm+1);
+                this.ParallelismMap.put(top.id, current_pllsm+1);   // this is important, keep this
             }
             else{
                 Component current_source=this.sourceList.get(sourceCount%(this.sourceList.size()));
@@ -460,6 +468,11 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
     private void updateExpectedRateChange() {
         LOG.info("in updateExpectedRateChange");
+
+        this.ExpectedEmitRateMap = this.BestExpectedEmitRateMap;
+        this.ExpectedExecuteRateMap = this.BestExpectedExecuteRateMap;
+
+        return;
     }
 
     private Integer findTaskSize(Component key) {
