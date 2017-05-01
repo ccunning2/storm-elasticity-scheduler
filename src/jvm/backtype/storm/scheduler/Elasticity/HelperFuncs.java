@@ -235,7 +235,7 @@ public class HelperFuncs {
 	}
 	
 	public static void decreaseParallelism(Map<Component, Integer> compMap, TopologyDetails topo) {
-		String cmd = "/var/storm/storm_0/bin/storm rebalance -w 0 "+topo.getName();
+		String cmd = "/home/ubuntu/apache-storm-0.10.2/bin/storm rebalance -w 0 "+topo.getName();
 		for(Entry<Component, Integer> entry : compMap.entrySet()) {
 			Integer parallelism_hint = entry.getKey().execs.size() - entry.getValue();
 			String component_id = entry.getKey().id;
@@ -254,7 +254,7 @@ public class HelperFuncs {
 	}
 	
 	public static void changeParallelism2(Map<Component, Integer> compMap, TopologyDetails topo) {
-		String cmd = "/var/storm/storm_0/bin/storm rebalance -w 0 "+topo.getName();
+		String cmd = "/home/ubuntu/apache-storm-0.10.2/bin/storm rebalance -w 0 "+topo.getName();
 		for(Entry<Component, Integer> entry : compMap.entrySet()) {
 			Integer parallelism_hint = entry.getKey().execs.size() + entry.getValue();
 			String component_id = entry.getKey().id;
