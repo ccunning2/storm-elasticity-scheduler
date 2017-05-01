@@ -51,7 +51,7 @@ public class MsgServer {
 		if(this.msgQueue.isEmpty()!=true) {
 			String msg = this.msgQueue.remove();
 			LOG.info("Message is {}", msg);
-			if(msg.equals("REBALANCE") == true) {
+			if(msg.equalsIgnoreCase("REBALANCE")) {
 				LOG.info("Signal sent back is {}", Signal.ScaleOut);
 				return Signal.ScaleOut;
 			} else if(msg.equals("SCALEIN")) {
