@@ -52,7 +52,11 @@ public class MsgServer {
 			String msg = this.msgQueue.remove();
 			LOG.info("Message is {}", msg);
 			LOG.info(msg);
-			LOG.info(msg.equalsIgnoreCase("REBALANCE")));
+			if (msg.equalsIgnoreCase("REBALANCE")) {
+			    LOG.info("True");
+            } else {
+			    LOG.info("False");
+            }
 			if(msg.equalsIgnoreCase("REBALANCE")) {
 				LOG.info("Signal sent back is {}", Signal.ScaleOut);
 				return Signal.ScaleOut;
