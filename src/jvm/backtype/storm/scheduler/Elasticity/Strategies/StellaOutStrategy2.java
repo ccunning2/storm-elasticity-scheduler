@@ -186,8 +186,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 //            LOG.info("2 {}, ",this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput );
 //            LOG.info("3 {}, ", this.CpuMap.get(host.getValue().hostname));
 //            LOG.info("CPU Map {}", this.CpuMap);
-            this.perCpuRate.put(host.getValue().hostname, ( this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput / this.CpuMap.get(host.getValue().supervisor_id)));
-            LOG.info("perCpu Rate for {} : {}", host.getValue().hostname, this.perCpuRate.get(host.getValue().hostname));
+            if (this._getStats.nodeStats.get(host.getValue().hostname) != null) {
+                this.perCpuRate.put(host.getValue().hostname, (this._getStats.nodeStats.get(host.getValue().hostname).emit_throughput / this.CpuMap.get(host.getValue().supervisor_id)));
+                LOG.info("perCpu Rate for {} : {}", host.getValue().hostname, this.perCpuRate.get(host.getValue().hostname));
+            }
         }
 
 
@@ -239,6 +241,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         boolean ret = true;
         for (ExecutorDetails exec : comp.execs) {
             Node node = this.ExecToNodeMap.get(exec);
+            //Null pointer?
             double currentCPu = this.CpuMap.get(node.supervisor_id);
             if(currentCPu < THRESHOLD_CPU) {
                 ret = false;
@@ -402,8 +405,8 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             Component top=null;
             for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
                 LOG.info("Enter For loop for EETP()");
-                //Todo : undo this comment if(this.ParallelismMap.get(e.getKey().id)>=findTaskSize(e.getKey()))//cant exceed the threshold
-                    // continue;
+                if(this.ParallelismMap.get(e.getKey().id)>=findTaskSize(e.getKey()))//cant exceed the threshold
+                    continue;
                 LOG.info("Enter EETP()");
                 Integer outpercentage=e.getValue();
                 this.getExpectedImprovement(e.getKey());
@@ -450,7 +453,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             }
         }
 
-        ret=new HashMap<Component, Integer>();
+        // ret=new HashMap<Component, Integer>();
         LOG.info("List of components that need to be parallelized:{}",ret);
         return ret;
     }

@@ -65,7 +65,13 @@ public class ElasticityScheduler implements IScheduler {
 			String status = HelperFuncs.getStatus(topo.getId());
 			LOG.info("status: {}", status);
 
-			MsgServer.Signal signal = MsgServer.Signal.ScaleOut;        //msgServer.getMessage();
+			//MsgServer.Signal signal = MsgServer.Signal.ScaleOut;        //msgServer.getMessage();
+            MsgServer.Signal signal = msgServer.getMessage();
+			if (signal !=null) {
+
+				LOG.info("Signal is: {}", signal.name());
+			}
+
 			if(signal == MsgServer.Signal.ScaleOut || (globalState.rebalancingState == MsgServer.Signal.ScaleOut && status.equals("REBALANCING"))){
 				LOG.info("SCALEOUT");
 				this.scaleOut(msgServer, topo, topologies, globalState, stats, cluster);
@@ -124,6 +130,7 @@ public class ElasticityScheduler implements IScheduler {
 	
 	public void scaleOut(MsgServer msgServer, TopologyDetails topo, Topologies topologies, GlobalState globalState, GetStats stats, Cluster cluster) {
 		String status = HelperFuncs.getStatus(topo.getId());
+		LOG.info("Status: {}", status);
 		if (true) { //(msgServer.isRebalance() == true) { TODO Uncomment/FIX
 			if (true) { //(globalState.stateEmpty() == false) {
 				 //List<Node> newNodes = globalState.getNewNode();
