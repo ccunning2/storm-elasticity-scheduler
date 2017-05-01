@@ -43,9 +43,9 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     int count;
 
     public StellaOutStrategy2(GlobalState globalState, GetStats getStats,
-                             TopologyDetails topo, Cluster cluster, Topologies topologies) {
+                              TopologyDetails topo, Cluster cluster, Topologies topologies) {
         super(globalState, getStats, topo, cluster, topologies);
-        count=topo.getExecutors().size()/this._cluster.getSupervisors().size();
+        count = topo.getExecutors().size() / this._cluster.getSupervisors().size();
         LOG.info("NUMBER OF EXECUTORS WE'RE GOING TO ADD: {}", count);
     }
 
@@ -53,12 +53,12 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     public TreeMap<Component, Integer> Strategy(Map<String, Component> map) {
 
         init(map);
-        HashMap<Component, Integer> arr=new HashMap<Component, Integer>();
-        arr=StellaStrategy(map);
+        HashMap<Component, Integer> arr = new HashMap<Component, Integer>();
+        arr = StellaStrategy(map);
         HashMap<Component, Integer> rankMap = new HashMap<Component, Integer>();
-        ComponentComparator bvc =  new ComponentComparator(rankMap);
+        ComponentComparator bvc = new ComponentComparator(rankMap);
         TreeMap<Component, Integer> IORankMap = new TreeMap<Component, Integer>(bvc);
-        for(Map.Entry<Component,Integer> e:arr.entrySet()) {
+        for (Map.Entry<Component, Integer> e : arr.entrySet()) {
             rankMap.put(e.getKey(), 1);
         }
         IORankMap.putAll(rankMap);
@@ -67,7 +67,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
     private void GetExecToNodeMap() {
 
-        for(Map.Entry<String, Node> node : this._globalState.nodes.entrySet()) {
+        for (Map.Entry<String, Node> node : this._globalState.nodes.entrySet()) {
             LOG.info("Node: {}", node);
             for (ExecutorDetails exec : node.getValue().execs) {
                 LOG.info("ExecutorDetails: {}", exec);
@@ -81,7 +81,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         LOG.info("Enter()");
 
         double avg = 0;
-        for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
+        for (Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
             avg = 0.1;
             String hostname = host.getValue().hostname;
             LOG.info("Checking hostname: {}", hostname);
@@ -111,10 +111,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // TODO Auto-generated method stub
         this.EmitRateMap = new HashMap<String, Double>();
 
-        for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
+        for (Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
             LOG.info("Topology: {}", i.getKey());
-            for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
-				/*LOG.info("Component: {}", k.getKey());
+            for (Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
+                /*LOG.info("Component: {}", k.getKey());
 				LOG.info("Emit History: ", k.getValue());
 				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
                 this.EmitRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
@@ -125,10 +125,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
         //construct a map for emit throughput for each component
         this.ExecuteRateMap = new HashMap<String, Double>();
-        for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.executeThroughputHistory.entrySet()) {
+        for (Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.executeThroughputHistory.entrySet()) {
             LOG.info("Topology: {}", i.getKey());
 
-            for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
+            for (Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
 				/*LOG.info("Component: {}", k.getKey());
 				LOG.info("Execute History: ", k.getValue());
 				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
@@ -141,10 +141,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
         //parallelism map
         this.ParallelismMap = new HashMap<String, Integer>();
-        for( Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
+        for (Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
             LOG.info("Topology: {}", i.getKey());
-            for(Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
-                Component self=this._globalState.components.get(this._topo.getId()).get(k.getKey());
+            for (Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
+                Component self = this._globalState.components.get(this._topo.getId()).get(k.getKey());
                 LOG.info("Component: {}", self.id);
                 LOG.info("parallelism level: {}", self.execs.size());
                 this.ParallelismMap.put(self.id, self.execs.size());
@@ -152,10 +152,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         }
 
         //source list, in case we need to speed up the entire thing
-        this.sourceList=new ArrayList<Component>();
-        for( Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
-            Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-            if(self.parents.size()==0){
+        this.sourceList = new ArrayList<Component>();
+        for (Map.Entry<String, Double> i : EmitRateMap.entrySet()) {
+            Component self = this._globalState.components.get(this._topo.getId()).get(i.getKey());
+            if (self.parents.size() == 0) {
                 this.sourceList.add(self);
             }
         }
@@ -164,14 +164,14 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // HashMap<String, Integer> perCpuRate = new HashMap<String, Integer>();
         // HashMap<String, Double> throughputToExecuteRatio;
         this.perExecRate = new HashMap<String, Double>();
-        for(HashMap.Entry<String, Double> entry : this.ExecuteRateMap.entrySet()) {
-            this.perExecRate.put(entry.getKey(), entry.getValue()/this.ParallelismMap.get(entry.getKey()));
+        for (HashMap.Entry<String, Double> entry : this.ExecuteRateMap.entrySet()) {
+            this.perExecRate.put(entry.getKey(), entry.getValue() / this.ParallelismMap.get(entry.getKey()));
         }
 
         // right now it is doing emit. Should be doing Transfer?
         this.throughputToExecuteRatio = new HashMap<String, Double>();
-        for(HashMap.Entry<String, Double> entry : this.EmitRateMap.entrySet()) {
-            this.throughputToExecuteRatio.put(entry.getKey(), entry.getValue()/this.ExecuteRateMap.get(entry.getKey()));
+        for (HashMap.Entry<String, Double> entry : this.EmitRateMap.entrySet()) {
+            this.throughputToExecuteRatio.put(entry.getKey(), entry.getValue() / this.ExecuteRateMap.get(entry.getKey()));
         }
 
         // cc: place holder
@@ -179,7 +179,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
         // get tuple per cpu
         this.perCpuRate = new HashMap<String, Double>();
-        for(Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
+        for (Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
 //            LOG.info("77- Key in globalstate.nodes {}, Node ID: {}", host.getKey(), host.getValue().supervisor_id);
 //            LOG.info("NodeStats {}", this._getStats.nodeStats);
 //            LOG.info("hostname {}", host.getValue().hostname);
@@ -195,23 +195,22 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
         this.GetExecToNodeMap();
 
-        this.sourceCount=0;
+        this.sourceCount = 0;
 
     }
 
     private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap, HashMap<String, Double> iOMap) {
         // TODO Auto-generated method stub
-        if(self.children.size()==0){
+        if (self.children.size() == 0) {
             return sinkMap.get(self.id);//this branch leads to a final value with no overflowed node between
         }
-        Double sum=0.0;
-        for (int i=0; i<self.children.size();i++){
-            if(iOMap.get(self.children.get(i))!=null){//if child is also overflowed, return 0 on this branch
+        Double sum = 0.0;
+        for (int i = 0; i < self.children.size(); i++) {
+            if (iOMap.get(self.children.get(i)) != null) {//if child is also overflowed, return 0 on this branch
                 continue;//ignore this branch move forward
-            }
-            else{
-                Component child=this._globalState.components.get(this._topo.getId()).get(self.children.get(i));//lookup child's component
-                sum+=RecursiveFind(child,sinkMap,iOMap);
+            } else {
+                Component child = this._globalState.components.get(this._topo.getId()).get(self.children.get(i));//lookup child's component
+                sum += RecursiveFind(child, sinkMap, iOMap);
             }
         }
         return sum;
@@ -221,6 +220,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     public class ComponentComparatorDouble implements Comparator<String> {
 
         HashMap<String, Double> base;
+
         public ComponentComparatorDouble(HashMap<String, Double> base) {
             this.base = base;
         }
@@ -243,7 +243,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             Node node = this.ExecToNodeMap.get(exec);
             //Null pointer?
             double currentCPu = this.CpuMap.get(node.supervisor_id);
-            if(currentCPu < THRESHOLD_CPU) {
+            if (currentCPu < THRESHOLD_CPU) {
                 ret = false;
                 LOG.info("Node: {} Cpu: {}", node, currentCPu);
                 break;
@@ -271,16 +271,16 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         LOG.info("executeToThroughputRatio : {}, TempExpectedEmitIncrease : {}",
                 this.throughputToExecuteRatio.get(head.id), expectedThroughputIncrease);
         LOG.info("Current Rate : {}, Throughput : {}",
-                this.ExpectedExecuteRateMap.get(head.id) ,this.ExpectedEmitRateMap.get(head.id));
+                this.ExpectedExecuteRateMap.get(head.id), this.ExpectedEmitRateMap.get(head.id));
 
         // push all children
         LinkedList<Component> queue = new LinkedList<Component>();
-        if(head.children.size() != 0)
-        for (String child : head.children) {
-            Map<String, Component> compMap = this._globalState.components.get(this._topo.getId());
-            LOG.info("Adding Child : {}", compMap.get(child));
-            queue.add(compMap.get(child));
-        }
+        if (head.children.size() != 0)
+            for (String child : head.children) {
+                Map<String, Component> compMap = this._globalState.components.get(this._topo.getId());
+                LOG.info("Adding Child : {}", compMap.get(child));
+                queue.add(compMap.get(child));
+            }
 
         /* first get some component stats */
         while (queue.size() != 0) {
@@ -310,7 +310,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 LOG.info("cpu for node : {} increase : {}", node.hostname, cpu_increase);
             }
 
-            if(new_parent_increase != 0)
+            if (new_parent_increase != 0)
                 parent_increase = new_parent_increase;
 
             LOG.info("throughput increase : {}",
@@ -319,7 +319,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             this.TempExpectedExecuteRateMap.put(c.id, parent_increase);
             this.TempExpectedEmitRateMap.put(c.id, parent_increase * this.throughputToExecuteRatio.get(c.id));
 
-            if(c.children.size() != 0)
+            if (c.children.size() != 0)
                 for (String child : c.children) {
                     Map<String, Component> compMap = this._globalState.components.get(this._topo.getId());
                     LOG.info("Adding Child : {}", compMap.get(child));
@@ -334,27 +334,27 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
         // TODO Auto-generated method stub
         //construct a map for emit throughput for each component
         init(map);
-        HashMap<Component, Integer> ret=new HashMap<Component, Integer>();
+        HashMap<Component, Integer> ret = new HashMap<Component, Integer>();
 
-        for(int j=0;j<count;j++){
+        for (int j = 0; j < count; j++) {
             LOG.info("ROUND {}", j);
             //construct a map for in-out throughput for each component
             HashMap<String, Double> IOMap = new HashMap<String, Double>();
             ComponentComparatorDouble bvc1 = new ComponentComparatorDouble(IOMap);
             TreeMap<String, Double> IORankMap = new TreeMap<String, Double>(bvc1);
-            for( Map.Entry<String, Double> i : ExpectedExecuteRateMap.entrySet()) {
-                Double out=i.getValue();
-                Double in=0.0;
-                Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-                if(self.parents.size()!=0){
-                    for(String parent: self.parents){
-                        in+=ExpectedEmitRateMap.get(parent);
+            for (Map.Entry<String, Double> i : ExpectedExecuteRateMap.entrySet()) {
+                Double out = i.getValue();
+                Double in = 0.0;
+                Component self = this._globalState.components.get(this._topo.getId()).get(i.getKey());
+                if (self.parents.size() != 0) {
+                    for (String parent : self.parents) {
+                        in += ExpectedEmitRateMap.get(parent);
                     }
                 }
 
                 // it should be true == isCongested. This is for testing, we want to add all components as congested
-                if(false == this.IsComponentCongested(self)){
-                    Double io=in-out;
+                if (false == this.IsComponentCongested(self)) {
+                    Double io = in - out;
                     IOMap.put(i.getKey(), io);
                     LOG.info("component: {} IO overflow: {}", i.getKey(), io);
                 }
@@ -368,24 +368,24 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             LOG.info("overload map", IOMap);
             //find all output bolts and their throughput
             HashMap<String, Double> SinkMap = new HashMap<String, Double>();
-            Double total_throughput=0.0;
-            for( Map.Entry<String, Double> i : ExpectedEmitRateMap.entrySet()) {
-                Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-                if(self.children.size()==0){
+            Double total_throughput = 0.0;
+            for (Map.Entry<String, Double> i : ExpectedEmitRateMap.entrySet()) {
+                Component self = this._globalState.components.get(this._topo.getId()).get(i.getKey());
+                if (self.children.size() == 0) {
                     LOG.info("the sink {} has throughput {}", i.getKey(), i.getValue());
-                    total_throughput+=i.getValue();
+                    total_throughput += i.getValue();
                 }
             }
             LOG.info("total throughput: {} ", total_throughput);
-            if(total_throughput==0.0){
+            if (total_throughput == 0.0) {
                 LOG.info("No throughput!");
                 continue;//no analysis
             }
-            for( Map.Entry<String, Double> i : ExpectedEmitRateMap.entrySet()) {
-                Component self=this._globalState.components.get(this._topo.getId()).get(i.getKey());
-                if(self.children.size()==0){
-                    LOG.info("sink: {} throughput percentage: {}", i.getKey(), (i.getValue())/total_throughput);
-                    SinkMap.put(i.getKey(),(i.getValue())/total_throughput);
+            for (Map.Entry<String, Double> i : ExpectedEmitRateMap.entrySet()) {
+                Component self = this._globalState.components.get(this._topo.getId()).get(i.getKey());
+                if (self.children.size() == 0) {
+                    LOG.info("sink: {} throughput percentage: {}", i.getKey(), (i.getValue()) / total_throughput);
+                    SinkMap.put(i.getKey(), (i.getValue()) / total_throughput);
                 }
             }
 
@@ -393,68 +393,68 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             /**adding final percentage to the map**/
             HashMap<Component, Integer> rankMap = new HashMap<Component, Integer>();
             for (Map.Entry<String, Double> entry : IOMap.entrySet()) {
-                Component self=this._globalState.components.get(this._topo.getId()).get(entry.getKey());
-                Double score=RecursiveFind(self,SinkMap,IOMap)*100;
+                Component self = this._globalState.components.get(this._topo.getId()).get(entry.getKey());
+                Double score = RecursiveFind(self, SinkMap, IOMap) * 100;
                 LOG.info("sink: {} effective throughput percentage: {}", self.id, score);
                 rankMap.put(self, score.intValue());
-
             }
             //find component with max EETP
-            Double max=0.0;
-            Double increase_max = 0;
-            Component top=null;
-            for(Map.Entry<Component, Integer> e: rankMap.entrySet()){
+            // Double max = 0.0;
+            Double increase_max = 0.0;
+            Component top = null;
+            for (Map.Entry<Component, Integer> e : rankMap.entrySet()) {
                 LOG.info("Enter For loop for EETP()");
-                if(this.ParallelismMap.get(e.getKey().id)>=findTaskSize(e.getKey()))//cant exceed the threshold
+                if (this.ParallelismMap.get(e.getKey().id) >= findTaskSize(e.getKey()))//cant exceed the threshold
                     continue;
                 LOG.info("Enter EETP()");
-                Integer outpercentage=e.getValue();
+                // Integer outpercentage = e.getValue();
                 this.getExpectedImprovement(e.getKey());
                 Integer increase = this.getExpectedThroughput(SinkMap);
-                if(increase_max < increase) {
+                if (increase_max < increase) {
+                    top=e.getKey();
                     this.BestExpectedEmitRateMap = this.TempExpectedEmitRateMap;
-                    this.BestExpectedExecuteRateMap = this.BestExpectedExecuteRateMap;
                 }
                 LOG.info("Projected Increase : {}", increase);
 
+                /*   from stela, we are using above alternate strategy
                 Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
 
                 if(improve_potential>=max){
                     top=e.getKey();
                     max=improve_potential;
                 }
+                */
             }
-            if(top!=null){
+            if (top != null) {
                 LOG.info("TOP OF {} ITERATION: {}", j, top);
-                if(ret.containsKey(top)==false){//if top is not in the return map yet
+                if (ret.containsKey(top) == false) {//if top is not in the return map yet
                     ret.put(top, 1);
-                }
-                else{
-                    ret.put(top, ret.get(top)+1);
+                } else {
+                    ret.put(top, ret.get(top) + 1);
                 }
                 //update throughput map
                 //update exectue rate map
                 this.updateExpectedRateChange();
-                int current_pllsm=this.ParallelismMap.get(top.id);
-                ExpectedExecuteRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedExecuteRateMap.get(top.id)); // << this will probably go away
+                int current_pllsm = this.ParallelismMap.get(top.id);
+                /* from stela, doing same function in updateExpectedRateChange()
+                ExpectedExecuteRateMap.put(top.id, (current_pllsm + 1) / (double) (current_pllsm) * ExpectedExecuteRateMap.get(top.id)); // << this will probably go away
                 //update emit rate map
-                ExpectedEmitRateMap.put(top.id, (current_pllsm+1)/(double)(current_pllsm)*ExpectedEmitRateMap.get(top.id));    // << this will probably go away
+                ExpectedEmitRateMap.put(top.id, (current_pllsm + 1) / (double) (current_pllsm) * ExpectedEmitRateMap.get(top.id));    // << this will probably go away
                 //update parallelism map
-                this.ParallelismMap.put(top.id, current_pllsm+1);   // this is important, keep this
-            }
-            else{
-                Component current_source=this.sourceList.get(sourceCount%(this.sourceList.size()));
-                if(ret.containsKey(current_source)==false){//if top is source in the return map yet
+                */
+                this.ParallelismMap.put(top.id, current_pllsm + 1);   // this is important, keep this
+            } else {
+                Component current_source = this.sourceList.get(sourceCount % (this.sourceList.size()));
+                if (ret.containsKey(current_source) == false) {//if top is source in the return map yet
                     ret.put(current_source, 1);
-                }
-                else{
-                    ret.put(current_source, ret.get(current_source)+1);
+                } else {
+                    ret.put(current_source, ret.get(current_source) + 1);
                 }
             }
         }
 
         // ret=new HashMap<Component, Integer>();
-        LOG.info("List of components that need to be parallelized:{}",ret);
+        LOG.info("List of components that need to be parallelized:{}", ret);
         return ret;
     }
 
@@ -480,9 +480,9 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
     private Integer findTaskSize(Component key) {
         // TODO Auto-generated method stub
-        Integer ret=0;
-        for(int i=0; i<key.execs.size();i++){
-            ret=ret + key.execs.get(i).getEndTask() - key.execs.get(i).getStartTask()+1;
+        Integer ret = 0;
+        for (int i = 0; i < key.execs.size(); i++) {
+            ret = ret + key.execs.get(i).getEndTask() - key.execs.get(i).getStartTask() + 1;
         }
         return ret;
     }
