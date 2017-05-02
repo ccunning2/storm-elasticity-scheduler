@@ -88,6 +88,8 @@ public class GlobalState {
 
 	public void storeSchedState(Cluster cluster, Topologies topologies) {
 		HashMap<String, Map<WorkerSlot, List<ExecutorDetails>>> sched_state = new HashMap<String, Map<WorkerSlot, List<ExecutorDetails>>>();
+
+		LOG.info("Calling Store Sched State()"):
 		for (TopologyDetails topo : topologies.getTopologies()) {
 			if (cluster.getAssignmentById(topo.getId()) != null) {
 
@@ -126,6 +128,7 @@ public class GlobalState {
 	public void logSchedChange(
 			Map<WorkerSlot, List<ExecutorDetails>> sched_state,
 			TopologyDetails topo) {
+		LOG.info("Logging Sched change");
 		Map<String, Map<WorkerSlot, List<ExecutorDetails>>> node_to_worker = new HashMap<String, Map<WorkerSlot, List<ExecutorDetails>>>();
 		for (Node n : this.nodes.values()) {
 			node_to_worker.put(n.supervisor_id,
@@ -386,6 +389,7 @@ public class GlobalState {
 	private Map<String, Boolean> log_scheduling_info = new HashMap<String, Boolean>();
 
 	public void logTopologyInfo(TopologyDetails topo) {
+		LOG.info("Logging Global State Info");
 		if (this.components.size() > 0) {
 			File file = this.scheduling_log;
 			if (this.log_scheduling_info.containsKey(topo.getId()) == false) {

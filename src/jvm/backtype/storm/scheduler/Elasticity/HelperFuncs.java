@@ -268,6 +268,7 @@ public class HelperFuncs {
 		try {
 			LOG.info("cmd: {}", cmd);
 			p = Runtime.getRuntime().exec(cmd);
+			LOG.info("Exit value of rebalance command : {}", p.exitValue());
 			//p.waitFor();
 			//BufferedReader reader = new BufferedReader(new InputStreamReader(
 			//		p.getInputStream()));

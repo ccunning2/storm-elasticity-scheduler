@@ -14,6 +14,7 @@ import java.util.TreeMap;
 public class ElasticityScheduler implements IScheduler {
 	private static final Logger LOG = LoggerFactory
 			.getLogger(ElasticityScheduler.class);
+	boolean flag = false; // Todo : remove this later. this is to make sure we do scale out only once
 	@SuppressWarnings("rawtypes")
 	private Map _conf;
 
@@ -56,6 +57,7 @@ public class ElasticityScheduler implements IScheduler {
 //		Whatever what = new Whatever();
 //		what.getSchedule();
 
+		LOG.info("Global State All Nodes : {}", globalState.toString());
 		/**
 		 * Start Scheduling
 		 */
@@ -131,10 +133,12 @@ public class ElasticityScheduler implements IScheduler {
 	public void scaleOut(MsgServer msgServer, TopologyDetails topo, Topologies topologies, GlobalState globalState, GetStats stats, Cluster cluster) {
 		String status = HelperFuncs.getStatus(topo.getId());
 		LOG.info("Status: {}", status);
-		if (true) { //(msgServer.isRebalance() == true) {
+		if (this.flag != true) { //(msgServer.isRebalance() == true) {
+			this.flag = true;
 			if (true) { //(globalState.stateEmpty() == false) {
 				 List<Node> newNodes = globalState.getNewNode();
-				
+
+				LOG.info("New Nodes size : {}", newNodes.size());
 				if (newNodes.size() > 0) {
 
 					LOG.info("Increasing parallelism...");
@@ -142,7 +146,6 @@ public class ElasticityScheduler implements IScheduler {
 					HashMap<Component, Integer> compMap = strategy.StellaStrategy(new HashMap<String, Component>());
 					
 					HelperFuncs.changeParallelism2(compMap, topo);
-
 				}
 
 			}
