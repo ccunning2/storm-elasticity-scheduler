@@ -69,6 +69,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
         for (Map.Entry<String, Node> node : this._globalState.nodes.entrySet()) {
             LOG.info("Node: {}", node);
+            LOG.info("88-Node execs: {}", node.getValue().execs );
             for (ExecutorDetails exec : node.getValue().execs) {
                 LOG.info("ExecutorDetails: {}", exec);
                 this.ExecToNodeMap.put(exec, node.getValue());
@@ -237,8 +238,9 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
 
     private boolean IsComponentCongested(Component comp) {
         LOG.info("In isComponentCongested");
-
+        LOG.info("88-Component: {}", comp);
         boolean ret = true;
+        LOG.info("88-Component execs: {}", comp.execs);
         for (ExecutorDetails exec : comp.execs) {
             Node node = this.ExecToNodeMap.get(exec);
             //Null pointer?
