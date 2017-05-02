@@ -89,7 +89,7 @@ public class GlobalState {
 	public void storeSchedState(Cluster cluster, Topologies topologies) {
 		HashMap<String, Map<WorkerSlot, List<ExecutorDetails>>> sched_state = new HashMap<String, Map<WorkerSlot, List<ExecutorDetails>>>();
 
-		LOG.info("Calling Store Sched State()"):
+		LOG.info("Calling Store Sched State()");
 		for (TopologyDetails topo : topologies.getTopologies()) {
 			if (cluster.getAssignmentById(topo.getId()) != null) {
 
