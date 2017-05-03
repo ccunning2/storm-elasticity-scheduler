@@ -45,7 +45,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     public StellaOutStrategy2(GlobalState globalState, GetStats getStats,
                               TopologyDetails topo, Cluster cluster, Topologies topologies) {
         super(globalState, getStats, topo, cluster, topologies);
-        count = topo.getExecutors().size() / this._cluster.getSupervisors().size();
+        count = 1; // topo.getExecutors().size() / this._cluster.getSupervisors().size();
         LOG.info("NUMBER OF EXECUTORS WE'RE GOING TO ADD: {}", count);
     }
 
