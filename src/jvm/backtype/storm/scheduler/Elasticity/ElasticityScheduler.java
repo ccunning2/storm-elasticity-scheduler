@@ -139,7 +139,7 @@ public class ElasticityScheduler implements IScheduler {
 				 List<Node> newNodes = globalState.getNewNode();
 
 				LOG.info("New Nodes size : {}", newNodes.size());
-				if (newNodes.size() > 0) {
+				if (true) {
 					this.flag++;
 					LOG.info("Increasing parallelism...");
 					StellaOutStrategy2 strategy = new StellaOutStrategy2(globalState, stats, topo, cluster, topologies);
