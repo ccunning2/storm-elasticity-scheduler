@@ -381,7 +381,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                     total_throughput += i.getValue();
                 }
             }
-            LOG.info("total throughput: {} ", total_throughput);
+            LOG.info("###-total throughput: {} ", total_throughput);
             if (total_throughput == 0.0) {
                 LOG.info("No throughput!");
                 continue;//no analysis
@@ -419,7 +419,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                     top=e.getKey();
                     this.BestExpectedEmitRateMap = this.TempExpectedEmitRateMap;
                 }
-                LOG.info("Projected Increase : {}", increase);
+                LOG.info("###-Projected Increase : {}", increase);
 
                 /*   from stela, we are using above alternate strategy
                 Double improve_potential=outpercentage/(double)this.ParallelismMap.get(e.getKey().id);
