@@ -130,10 +130,18 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             // LOG.info("Topology: {}", i.getKey());
 
             for (Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
-				/*LOG.info("Component: {}", k.getKey());
+
+                /*LOG.info("Component: {}", k.getKey());
 				LOG.info("Execute History: ", k.getValue());
 				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
-                this.ExecuteRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
+
+                Double movingAvg = HelperFuncs.computeMovAvg(k.getValue());
+
+                if (movingAvg.doubleValue() == 0){
+                    movingAvg = this.EmitRateMap.get(k.getKey());
+                }
+
+                this.ExecuteRateMap.put(k.getKey(),movingAvg );
                 // LOG.info("77- ExectureRateMap Key is {}", k.getKey());
             }
         }
