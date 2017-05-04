@@ -68,10 +68,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     private void GetExecToNodeMap() {
 
         for (Map.Entry<String, Node> node : this._globalState.nodes.entrySet()) {
-            LOG.info("Node: {}", node);
-            LOG.info("88-Node execs: {}", node.getValue().execs );
+            // LOG.info("Node: {}", node);
+            // LOG.info("88-Node execs: {}", node.getValue().execs );
             for (ExecutorDetails exec : node.getValue().execs) {
-                LOG.info("ExecutorDetails: {}", exec);
+                // LOG.info("ExecutorDetails: {}", exec);
                 this.ExecToNodeMap.put(exec, node.getValue());
             }
         }
@@ -79,7 +79,6 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     }
 
     private void GetCpuMap() {
-        LOG.info("Enter()");
 
         double avg = 0;
         for (Map.Entry<String, Node> host : this._globalState.nodes.entrySet()) {
@@ -87,23 +86,20 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             String hostname = host.getValue().hostname;
             LOG.info("Checking hostname: {}", hostname);
             if (this._getStats.cpuHistory.get(hostname) == null) {
-                LOG.info("Cpu history entry for {} is null", host.getKey());
                 LOG.info("Cpu history map: {}", this._getStats.cpuHistory);
             } else {
 
                 for (Profile prof : this._getStats.cpuHistory.get(hostname)) {
                     if (prof != null) {
                         avg = prof.getCpu_usage();
-                        LOG.info("Profile not null, avg: {}", avg);
+                        LOG.info("Profile avg: {}", avg);
                     }
                 }
-
-
             }
 
             if (avg == 0) avg = 0.1;
             this.CpuMap.put(host.getKey(), avg);
-            LOG.info("Cpu Host Map size: {}", this.CpuMap.size());
+            // LOG.info("Cpu Host Map size: {}", this.CpuMap.size());
         }
     }
 
@@ -116,38 +112,42 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             LOG.info("Topology: {}", i.getKey());
             for (Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
                 /*LOG.info("Component: {}", k.getKey());
-				LOG.info("Emit History: ", k.getValue());
-				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
+				LOG.info("Emit History: ", k.getValue());*/
+                LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));
                 this.EmitRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
             }
         }
-        LOG.info("Emit Rate: {}", EmitRateMap);
+
+        LOG.info("+++++++++++++++++++    RATE MAPS  ++++++++++++++++++++++++++");
+        LOG.info("Emit Rate");
+        LOG.info("{}", EmitRateMap);
+        LOG.info("------------------------------------------------------------");
         this.ExpectedEmitRateMap.putAll(EmitRateMap);
 
         //construct a map for emit throughput for each component
         this.ExecuteRateMap = new HashMap<String, Double>();
         for (Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.executeThroughputHistory.entrySet()) {
-            LOG.info("Topology: {}", i.getKey());
+            // LOG.info("Topology: {}", i.getKey());
 
             for (Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
 				/*LOG.info("Component: {}", k.getKey());
 				LOG.info("Execute History: ", k.getValue());
 				LOG.info("MvgAvg: {}", HelperFuncs.computeMovAvg(k.getValue()));*/
                 this.ExecuteRateMap.put(k.getKey(), HelperFuncs.computeMovAvg(k.getValue()));
-                LOG.info("77- ExectureRateMap Key is {}", k.getKey());
+                // LOG.info("77- ExectureRateMap Key is {}", k.getKey());
             }
         }
         LOG.info("Execute Rate: {}", ExecuteRateMap);
+        LOG.info("------------------------------------------------------------");
         this.ExpectedExecuteRateMap.putAll(ExecuteRateMap);
 
         //parallelism map
         this.ParallelismMap = new HashMap<String, Integer>();
         for (Map.Entry<String, HashMap<String, List<Integer>>> i : this._getStats.emitThroughputHistory.entrySet()) {
-            LOG.info("Topology: {}", i.getKey());
+            // LOG.info("Topology: {}", i.getKey());
             for (Map.Entry<String, List<Integer>> k : i.getValue().entrySet()) {
                 Component self = this._globalState.components.get(this._topo.getId()).get(k.getKey());
-                LOG.info("Component: {}", self.id);
-                LOG.info("parallelism level: {}", self.execs.size());
+                // LOG.info("Component: {} Parallelism level: {}", self.id, self.execs.size());
                 this.ParallelismMap.put(self.id, self.execs.size());
             }
         }
@@ -193,11 +193,10 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
             }
         }
 
+        LOG.info("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
         this.GetExecToNodeMap();
-
         this.sourceCount = 0;
-
     }
 
     private Double RecursiveFind(Component self, HashMap<String, Double> sinkMap, HashMap<String, Double> iOMap) {
@@ -237,20 +236,19 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
     }
 
     private boolean IsComponentCongested(Component comp) {
-        LOG.info("In isComponentCongested");
-        LOG.info("88-Component: {}", comp);
+        // LOG.info("88-Component: {}", comp);
         boolean ret = true;
-        LOG.info("88-Component execs: {}", comp.execs);
+        // LOG.info("88-Component execs: {}", comp.execs);
         for (ExecutorDetails exec : comp.execs) {
             Node node = this.ExecToNodeMap.get(exec);
             //Null pointer?
-            LOG.info("88-Node = {}", node);
-            LOG.info("88-Node supervisor ID: {}", node.supervisor_id);
-            LOG.info("88- CPU Map: {}", this.CpuMap);
+            // LOG.info("88-Node = {}", node);
+            // LOG.info("88-Node supervisor ID: {}", node.supervisor_id);
+            // LOG.info("88- CPU Map: {}", this.CpuMap);
             double currentCPu = this.CpuMap.get(node.supervisor_id);
             if (currentCPu < THRESHOLD_CPU) {
                 ret = false;
-                LOG.info("Node: {} Cpu: {}", node, currentCPu);
+                LOG.info("Component is not congested : {} Node: {} Cpu: {}", comp.id, node, currentCPu);
                 break;
             }
         }
