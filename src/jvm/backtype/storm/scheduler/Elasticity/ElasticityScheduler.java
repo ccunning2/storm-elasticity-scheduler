@@ -133,7 +133,7 @@ public class ElasticityScheduler implements IScheduler {
 	public void scaleOut(MsgServer msgServer, TopologyDetails topo, Topologies topologies, GlobalState globalState, GetStats stats, Cluster cluster) {
 		String status = HelperFuncs.getStatus(topo.getId());
 		LOG.info("Status: {}", status);
-		if (!status.equals("REBALANCING") && this.flag < 10) { //(msgServer.isRebalance() == true) {
+		if (!status.equals("REBALANCING")) { //(msgServer.isRebalance() == true) {
 
 			if (true) { //(globalState.stateEmpty() == false) {
 				 List<Node> newNodes = globalState.getNewNode();

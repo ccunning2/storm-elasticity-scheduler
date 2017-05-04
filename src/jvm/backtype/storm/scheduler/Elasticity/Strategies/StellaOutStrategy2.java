@@ -358,7 +358,7 @@ public class StellaOutStrategy2 extends TopologyHeuristicStrategy {
                 }
 
                 // it should be true == isCongested. This is for testing, we want to add all components as congested
-                if (false == this.IsComponentCongested(self)) {
+                if (true == this.IsComponentCongested(self)) {
                     Double io = in - out;
                     IOMap.put(i.getKey(), io);
                     LOG.info("component: {} IO overflow: {}", i.getKey(), io);
